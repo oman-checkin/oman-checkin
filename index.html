@@ -4,41 +4,63 @@
   <title>National Day Check-In</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
-    body { font-family: sans-serif; text-align: center; padding: 20px; }
-    #reader { width: 300px; margin: auto; }
-    #result { margin-top: 20px; font-size: 18px; color: green; }
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+    #reader {
+      width: 300px;
+      margin: auto;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 18px;
+      color: green;
+      white-space: pre-line;
+    }
   </style>
 </head>
 <body>
-  <h2>Scan Your QR Code to Check In</h2>
+  <h2>Scan Guest QR Code</h2>
   <div id="reader"></div>
-  <div id="result"></div>
+  <div id="result">Waiting for scan...</div>
 
   <script>
     function onScanSuccess(decodedText, decodedResult) {
-  document.getElementById("result").innerText = "✅ Guest scanned: " + decodedText;
+      document.getElementById("result").innerText = "✅ Scanned: " + decodedText;
 
-  // Extract the GUID from the scanned URL
-  try {
-    const url = new URL(decodedText);
-    const guestId = url.searchParams.get("id");
+      try {
+        const url = new URL(decodedText);
+        const guestId = url.searchParams.get("id");
 
-    // Send to Power Automate
-    fetch("https://YOUR-FLOW-URL-HERE", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: guestId })
-    }).then(response => {
-      if (response.ok) {
-        document.getElementById("result").innerText += "\n✅ Check-in logged!";
-      } else {
-        document.getElementById("result").innerText += "\n⚠️ Failed to log check-in.";
+        if (!guestId) {
+          document.getElementById("result").innerText += "\n❌ No ID found in QR code.";
+          return;
+        }
+
+        // Send to Power Automate
+        fetch("https://YOUR-FLOW-URL-HERE", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: guestId })
+        })
+        .then(response => {
+          if (response.ok) {
+            document.getElementById("result").innerText += "\n✅ Check-in logged!";
+          } else {
+            document.getElementById("result").innerText += "\n⚠️ Failed to log check-in.";
+          }
+        })
+        .catch(error => {
+          document.getElementById("result").innerText += "\n❌ Error: " + error.message;
+        });
+
+      } catch (error) {
+        document.getElementById("result").innerText = "❌ Invalid QR code format.";
       }
-    });
-  } catch (error) {
-    document.getElementById("result").innerText = "❌ Invalid QR code format.";
-  }
-}
+    }
 
     const html5QrCode = new Html5Qrcode("reader");
     html5QrCode.start(
@@ -49,4 +71,3 @@
   </script>
 </body>
 </html>
-
