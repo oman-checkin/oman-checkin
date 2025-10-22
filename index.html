@@ -40,22 +40,10 @@
           return;
         }
 
-        // Send to Power Automate
-        fetch("https://YOUR-FLOW-URL-HERE", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: guestId })
-        })
-        .then(response => {
-          if (response.ok) {
-            document.getElementById("result").innerText += "\n✅ Check-in logged!";
-          } else {
-            document.getElementById("result").innerText += "\n⚠️ Failed to log check-in.";
-          }
-        })
-        .catch(error => {
-          document.getElementById("result").innerText += "\n❌ Error: " + error.message;
-        });
+        // Redirect to Microsoft Form with Guest ID
+        const formUrl = "https://forms.office.com/r/2ryLEu4rCe";
+        const redirectUrl = `${formUrl}?GuestID=${encodeURIComponent(guestId)}`;
+        window.location.href = redirectUrl;
 
       } catch (error) {
         document.getElementById("result").innerText = "❌ Invalid QR code format.";
