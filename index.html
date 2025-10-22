@@ -16,19 +16,29 @@
 
   <script>
     function onScanSuccess(decodedText, decodedResult) {
-      document.getElementById("result").innerText = "✅ Checked in: " + decodedText;
+  document.getElementById("result").innerText = "✅ Guest scanned: " + decodedText;
 
-      // Extract the GUID from the URL
-      const url = new URL(decodedText);
-      const guestId = url.searchParams.get("id");
+  // Extract the GUID from the scanned URL
+  try {
+    const url = new URL(decodedText);
+    const guestId = url.searchParams.get("id");
 
-      // Send to Power Automate or backend
-      fetch("https://your-api-endpoint.com/checkin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: guestId })
-      });
-    }
+    // Send to Power Automate
+    fetch("https://YOUR-FLOW-URL-HERE", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: guestId })
+    }).then(response => {
+      if (response.ok) {
+        document.getElementById("result").innerText += "\n✅ Check-in logged!";
+      } else {
+        document.getElementById("result").innerText += "\n⚠️ Failed to log check-in.";
+      }
+    });
+  } catch (error) {
+    document.getElementById("result").innerText = "❌ Invalid QR code format.";
+  }
+}
 
     const html5QrCode = new Html5Qrcode("reader");
     html5QrCode.start(
@@ -39,3 +49,4 @@
   </script>
 </body>
 </html>
+
