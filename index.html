@@ -153,10 +153,7 @@ async function fetchGuestInfo(qrGuid){
     const data = await res.json();
 
     // ✅ Clean RSVP if SharePoint returned a Choice object
-    const rsvp = (data && typeof data.RSVP === 'object') ? data.RSVP.Value : data.RSVP;
-
-    // ✅ Show guest info on the page
-    guestText.innerHTML = `<b>Name:</b> ${data.Name}<br><b>RSVP:</b> ${rsvp || 'N/A'}`;
+    guestText.innerHTML = `<b>Name:</b> ${data.Name}`;
     guestBox.style.display = "block";
 
     // ✅ Friendlier green status message (this is the line you asked about)
@@ -210,5 +207,6 @@ window.addEventListener("resize",()=>{
 </script>
 </body>
 </html>
+
 
 
