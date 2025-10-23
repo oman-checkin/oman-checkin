@@ -95,147 +95,147 @@
   </main>
 
   <script>
-    // ---------- Configuration ----------
-    const FORM_URL = "https://forms.office.com/Pages/ResponsePage.aspx?id=SKP0pF0QBkKpSC--KHw95wh-rfMdu3RDvatHQd_AhqRUQjVPTjQ4OUhLRjRZM1MwRFpCNlk3QlgyRC4u"; // destination form
-    const DEST_PARAM = "Guest ID"; // updated to match your form field label
+  // ---------- Configuration ----------
+  const FORM_URL = "https://forms.office.com/Pages/ResponsePage.aspx?id=SKP0pF0QBkKpSC--KHw95wh-rfMdu3RDvatHQd_AhqRUQjVPTjQ4OUhLRjRZM1MwRFpCNlk3QlgyRC4u"; // destination form
+  const DEST_PARAM = "Guest ID"; // must match your form field label exactly
 
-    // Compute a responsive scanning box based on container width
-    function computeQrbox(){
-      const wrap = document.getElementById("reader-wrap");
-      const w = wrap ? wrap.clientWidth : window.innerWidth;
-      // 82% of container, clamped to [280, 560] px for good UX
-      const size = Math.max(280, Math.min(560, Math.round(w * 0.82)));
-      return { width: size, height: size };
+  // Redirect to Microsoft Form with Guest ID in query string
+  function redirectToForm(qrGuid) {
+    const redirectUrl = `${FORM_URL}?${encodeURIComponent(DEST_PARAM)}=${encodeURIComponent(qrGuid)}`;
+    window.location.href = redirectUrl;
+  }
+
+  // Compute a responsive scanning box based on container width
+  function computeQrbox() {
+    const wrap = document.getElementById("reader-wrap");
+    const w = wrap ? wrap.clientWidth : window.innerWidth;
+    const size = Math.max(280, Math.min(560, Math.round(w * 0.82)));
+    return { width: size, height: size };
+  }
+
+  const statusEl = document.getElementById("status");
+  const startBtn = document.getElementById("startBtn");
+  const stopBtn = document.getElementById("stopBtn");
+  const cameraSelect = document.getElementById("cameraSelect");
+
+  let html5Qr;
+  let isRunning = false;
+  let resizeTimer;
+
+  function setStatus(text, error = false) {
+    statusEl.textContent = text;
+    statusEl.classList.toggle("error", !!error);
+  }
+
+  function parseGuestId(decodedText) {
+    try {
+      const url = new URL(decodedText);
+      return url.searchParams.get("id") || url.searchParams.get(DEST_PARAM);
+    } catch {
+      return decodedText && decodedText.trim().length ? decodedText.trim() : null;
     }
+  }
 
-    const statusEl = document.getElementById("status");
-    const startBtn = document.getElementById("startBtn");
-    const stopBtn  = document.getElementById("stopBtn");
-    const cameraSelect = document.getElementById("cameraSelect");
-
-    let html5Qr;          // Html5Qrcode instance
-    let isRunning = false;
-    let resizeTimer;
-
-    function setStatus(text, error=false){
-      statusEl.textContent = text;
-      statusEl.classList.toggle("error", !!error);
+  function onScanSuccess(decodedText) {
+    const guestId = parseGuestId(decodedText);
+    if (!guestId) {
+      setStatus("❌ QR scanned, but no ID was found. Please try again.", true);
+      return;
     }
+    setStatus("✅ Scanned successfully. Redirecting…");
+    stopScanner().finally(() => redirectToForm(guestId));
+  }
 
-    function parseGuestId(decodedText){
-      try{
-        const url = new URL(decodedText);
-        return url.searchParams.get("id") || url.searchParams.get(DEST_PARAM);
-      }catch{
-        // Not a URL: treat as raw ID if non-empty
-        return decodedText && decodedText.trim().length ? decodedText.trim() : null;
-      }
-    }
+  function onScanFailure() {
+    // Silent failure — avoids UI spam
+  }
 
-    function onScanSuccess(decodedText /*, decodedResult */){
-      const guestId = parseGuestId(decodedText);
-      if(!guestId){
-        setStatus("❌ QR scanned, but no ID was found. Please try again.", true);
+  async function populateCameras() {
+    try {
+      const devices = await Html5Qrcode.getCameras();
+      cameraSelect.innerHTML = '<option value="" disabled selected>Choose camera…</option>';
+      if (!devices?.length) {
+        cameraSelect.innerHTML = '<option value="" disabled selected>No cameras found</option>';
+        setStatus("⚠️ No cameras detected. Make sure you are on HTTPS and granted camera access.", true);
         return;
       }
-      setStatus("✅ Scanned successfully. Redirecting…");
-      const redirectUrl = `${FORM_URL}?${encodeURIComponent(DEST_PARAM)}=${encodeURIComponent(guestId)}`;
-      stopScanner().finally(()=>{ window.location.href = redirectUrl; });
-    }
-
-    function onScanFailure(/* error */){
-      // Keep calm; avoid spamming the UI with decode errors
-    }
-
-    async function populateCameras(){
-      try{
-        const devices = await Html5Qrcode.getCameras();
-        cameraSelect.innerHTML = '<option value="" disabled selected>Choose camera…</option>';
-        if(!devices?.length){
-          cameraSelect.innerHTML = '<option value="" disabled selected>No cameras found</option>';
-          setStatus("⚠️ No cameras detected. Make sure you are on HTTPS and granted camera access.", true);
-          return;
-        }
-        // Prefer environment/back cameras first
-        devices.sort((a,b)=>{
-          const ab = /back|rear|environment/i.test(a.label);
-          const bb = /back|rear|environment/i.test(b.label);
-          return (bb - ab) || a.label.localeCompare(b.label);
-        });
-        for(const d of devices){
-          const opt = document.createElement("option");
-          opt.value = d.id;
-          opt.textContent = d.label || `Camera ${cameraSelect.length}`;
-          cameraSelect.appendChild(opt);
-        }
-        cameraSelect.selectedIndex = 1; // default to first real camera
-      }catch(e){
-        setStatus("⚠️ Unable to list cameras. Use HTTPS and allow camera permissions.", true);
+      devices.sort((a, b) => {
+        const ab = /back|rear|environment/i.test(a.label);
+        const bb = /back|rear|environment/i.test(b.label);
+        return (bb - ab) || a.label.localeCompare(b.label);
+      });
+      for (const d of devices) {
+        const opt = document.createElement("option");
+        opt.value = d.id;
+        opt.textContent = d.label || `Camera ${cameraSelect.length}`;
+        cameraSelect.appendChild(opt);
       }
+      cameraSelect.selectedIndex = 1;
+    } catch (e) {
+      setStatus("⚠️ Unable to list cameras. Use HTTPS and allow camera permissions.", true);
     }
+  }
 
-    async function startScanner(){
-      try{
-        if(!html5Qr) html5Qr = new Html5Qrcode("reader", /* verbose= */ false);
-        const deviceId = cameraSelect.value || (await Html5Qrcode.getCameras())[0]?.id;
-        if(!deviceId){
-          setStatus("⚠️ Select a camera before starting.", true);
-          return;
-        }
-        const config = {
-          fps: 12,
-          qrbox: computeQrbox(),
-          experimentalFeatures: { useBarCodeDetectorIfSupported: true }
-        };
-        await html5Qr.start({ deviceId: { exact: deviceId } }, config, onScanSuccess, onScanFailure);
-        isRunning = true;
-        startBtn.disabled = true;
-        stopBtn.disabled = false;
-        cameraSelect.disabled = true;
-        setStatus("📷 Scanner running. Align the QR code within the square.");
-      }catch(e){
-        setStatus(`❌ Could not start the scanner.\n${e?.message || e}`, true);
+  async function startScanner() {
+    try {
+      if (!html5Qr) html5Qr = new Html5Qrcode("reader", false);
+      const deviceId = cameraSelect.value || (await Html5Qrcode.getCameras())[0]?.id;
+      if (!deviceId) {
+        setStatus("⚠️ Select a camera before starting.", true);
+        return;
       }
+      const config = {
+        fps: 12,
+        qrbox: computeQrbox(),
+        experimentalFeatures: { useBarCodeDetectorIfSupported: true }
+      };
+      await html5Qr.start({ deviceId: { exact: deviceId } }, config, onScanSuccess, onScanFailure);
+      isRunning = true;
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+      cameraSelect.disabled = true;
+      setStatus("📷 Scanner running. Align the QR code within the square.");
+    } catch (e) {
+      setStatus(`❌ Could not start the scanner.\n${e?.message || e}`, true);
     }
+  }
 
-    async function stopScanner(){
-      if(html5Qr && isRunning){
-        try{
-          await html5Qr.stop();
-          await html5Qr.clear();
-        }catch(_){}
-      }
-      isRunning = false;
-      startBtn.disabled = false;
-      stopBtn.disabled = true;
-      cameraSelect.disabled = false;
-      setStatus("Scanner stopped. Press “Start Scan” to resume.");
+  async function stopScanner() {
+    if (html5Qr && isRunning) {
+      try {
+        await html5Qr.stop();
+        await html5Qr.clear();
+      } catch (_) {}
     }
+    isRunning = false;
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
+    cameraSelect.disabled = false;
+    setStatus("Scanner stopped. Press “Start Scan” to resume.");
+  }
 
-    // Re-size handling: restart with new qrbox if running
-    window.addEventListener("resize", ()=>{
-      if(!isRunning) return;
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(async ()=>{
-        await stopScanner();
-        await startScanner();
-      }, 250);
-    });
+  window.addEventListener("resize", () => {
+    if (!isRunning) return;
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(async () => {
+      await stopScanner();
+      await startScanner();
+    }, 250);
+  });
 
-    // Buttons
-    startBtn.addEventListener("click", startScanner);
-    stopBtn.addEventListener("click",  stopScanner);
+  startBtn.addEventListener("click", startScanner);
+  stopBtn.addEventListener("click", stopScanner);
 
-    // Init
-    (async ()=>{
-      if(location.protocol !== "https:"){
-        setStatus("ℹ️ Tip: Use HTTPS for camera access on most devices.");
-      }
-      await populateCameras();
-    })();
-  </script>
+  (async () => {
+    if (location.protocol !== "https:") {
+      setStatus("ℹ️ Tip: Use HTTPS for camera access on most devices.");
+    }
+    await populateCameras();
+  })();
+</script>
 </body>
 </html>
+
 
 
 
