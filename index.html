@@ -7,15 +7,9 @@
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
     :root{
-      --brand:#006400; /* Omani green */
-      --bg:#f7f7f7;
-      --card:#ffffff;
-      --text:#222;
-      --muted:#666;
-      --radius:14px;
-      --shadow:0 8px 24px rgba(0,0,0,.08);
-      --success:#1b7f1b;
-      --error:#b00020;
+      --brand:#006400;--bg:#f7f7f7;--card:#fff;--text:#222;--muted:#666;
+      --radius:14px;--shadow:0 8px 24px rgba(0,0,0,.08);
+      --success:#1b7f1b;--error:#b00020;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -24,221 +18,182 @@
       font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
       display:grid;place-items:start center;padding:24px
     }
-    .card{
-      width:100%;max-width:760px;background:var(--card);
-      border-radius:var(--radius);box-shadow:var(--shadow);
-      padding:20px 20px 24px
-    }
-    header{
-      text-align:center;padding:8px 12px 16px;border-bottom:2px solid var(--brand);margin-bottom:16px
-    }
+    .card{width:100%;max-width:760px;background:var(--card);
+      border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 20px 24px}
+    header{text-align:center;padding:8px 12px 16px;
+      border-bottom:2px solid var(--brand);margin-bottom:16px}
     header h1{margin:8px 0 0;font-size:clamp(20px,3.5vw,28px);color:var(--brand)}
     header p{margin:6px 0 0;color:var(--muted);font-weight:600}
     .flag{display:block;margin:0 auto 6px;height:40px;border-radius:6px;object-fit:cover}
-
-    .controls{
-      display:grid;grid-template-columns:1fr;gap:12px;margin:14px 0 10px
-    }
+    .controls{display:grid;grid-template-columns:1fr;gap:12px;margin:14px 0 10px}
     @media (min-width:560px){
       .controls{grid-template-columns:1.2fr auto auto;align-items:center}
     }
-    select,button{
-      border-radius:10px;border:1px solid #ddd;padding:10px 12px;font:inherit;background:#fff
-    }
-    button{
-      cursor:pointer;border:none;color:#fff;background:var(--brand);
-      transition:transform .07s ease, filter .2s ease
-    }
+    select,button{border-radius:10px;border:1px solid #ddd;
+      padding:10px 12px;font:inherit;background:#fff}
+    button{cursor:pointer;border:none;color:#fff;background:var(--brand);
+      transition:transform .07s ease,filter .2s ease}
     button.secondary{background:#2f6f2f}
     button:disabled{opacity:.55;cursor:not-allowed}
     button:active{transform:translateY(1px)}
     .hint{font-size:13px;color:var(--muted)}
-
     #reader-wrap{margin:14px auto 8px;width:100%;display:grid;place-items:center}
-    #reader{
-      width:100%;max-width:680px;aspect-ratio:1/1;background:#000;
-      border-radius:12px;overflow:hidden;box-shadow:var(--shadow)
-    }
-
-    .status{
-      margin-top:12px;padding:12px;border-radius:10px;font-size:15px;white-space:pre-line;
-      background:#f0f6f0;color:var(--success);border:1px solid #d9ebd9
-    }
+    #reader{width:100%;max-width:680px;aspect-ratio:1/1;background:#000;
+      border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
+    .status{margin-top:12px;padding:12px;border-radius:10px;font-size:15px;
+      white-space:pre-line;background:#f0f6f0;color:var(--success);
+      border:1px solid #d9ebd9}
     .status.error{background:#fdecec;color:var(--error);border:1px solid #f6caca}
-
+    #guestInfo{margin-top:18px;text-align:center;font-size:16px;display:none}
     footer{margin-top:10px;text-align:center;color:var(--muted);font-size:12px}
   </style>
 </head>
 <body>
-  <main class="card" role="main" aria-label="National Day Check-In">
-    <header>
-      <img class="flag" src="https://www.fm.gov.om/wp-content/uploads/Flag_of_OmanMin-of-Info-800px-600x343.jpg" alt="Flag of the Sultanate of Oman" />
-      <h1>Scan Guest QR Code</h1>
-      <p>Sultanate of Oman National Day 2025 – Check-In</p>
-    </header>
+<main class="card" role="main" aria-label="National Day Check-In">
+  <header>
+    <img class="flag"
+         src="https://www.fm.gov.om/wp-content/uploads/Flag_of_OmanMin-of-Info-800px-600x343.jpg"
+         alt="Flag of the Sultanate of Oman"/>
+    <h1>Scan Guest QR Code</h1>
+    <p>Sultanate of Oman National Day 2025 – Check-In</p>
+  </header>
 
-    <section class="controls" aria-label="Scanner Controls">
-      <select id="cameraSelect" aria-label="Select camera">
-        <option value="" disabled selected>Choose camera…</option>
-      </select>
-      <button id="startBtn" type="button">▶ Start Scan</button>
-      <button id="stopBtn" type="button" class="secondary" disabled>⏸ Stop</button>
-      <div class="hint" style="grid-column:1/-1">Tip: allow camera access; best with the back camera.</div>
-    </section>
-
-    <div id="reader-wrap" aria-live="polite">
-      <div id="reader"></div>
+  <section class="controls" aria-label="Scanner Controls">
+    <select id="cameraSelect"><option disabled selected>Choose camera…</option></select>
+    <button id="startBtn" type="button">▶ Start Scan</button>
+    <button id="stopBtn" type="button" class="secondary" disabled>⏸ Stop</button>
+    <div class="hint" style="grid-column:1/-1">
+      Tip: allow camera access; best with the back camera.
     </div>
+  </section>
 
-    <div id="status" class="status">Waiting to start…</div>
-    <footer>© 2025 Embassy of the Sultanate of Oman – Washington, D.C.</footer>
-  </main>
+  <div id="reader-wrap"><div id="reader"></div></div>
 
-  <script>
-  // ---------- Configuration ----------
-  const FORM_URL = "https://forms.office.com/Pages/ResponsePage.aspx?id=SKP0pF0QBkKpSC--KHw95wh-rfMdu3RDvatHQd_AhqRUQjVPTjQ4OUhLRjRZM1MwRFpCNlk3QlgyRC4u"; // destination form
-  const DEST_PARAM = "Guest ID"; // must match your form field label exactly
+  <div id="status" class="status">Waiting to start…</div>
 
-  // Redirect to Microsoft Form with Guest ID in query string
-  function redirectToForm(qrGuid) {
-    const redirectUrl = `${FORM_URL}?${encodeURIComponent(DEST_PARAM)}=${encodeURIComponent(qrGuid)}`;
-    window.location.href = redirectUrl;
-  }
+  <div id="guestInfo">
+    <p id="guestDetails"></p>
+    <button id="checkInBtn" style="display:none;">✅ Check In</button>
+  </div>
 
-  // Compute a responsive scanning box based on container width
-  function computeQrbox() {
-    const wrap = document.getElementById("reader-wrap");
-    const w = wrap ? wrap.clientWidth : window.innerWidth;
-    const size = Math.max(280, Math.min(560, Math.round(w * 0.82)));
-    return { width: size, height: size };
-  }
+  <footer>© 2025 Embassy of the Sultanate of Oman – Washington D.C.</footer>
+</main>
 
-  const statusEl = document.getElementById("status");
-  const startBtn = document.getElementById("startBtn");
-  const stopBtn = document.getElementById("stopBtn");
-  const cameraSelect = document.getElementById("cameraSelect");
+<script>
+/* ---------- Configuration ---------- */
+// 🔗 Replace with your real Power Automate URLs
+const getInfoUrl  = "https://defaulta4f4a348105d4206a9482fbe287c3d.e7.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/64a46e6d2a5647f1a50ca08f74ad1c50/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=McrYsVeN6dNaAuDm2UJswGM3pupLzIqOw_fGjjq3mmE";
+const checkInUrl  = "YOUR_CHECKIN_FLOW_URL";
 
-  let html5Qr;
-  let isRunning = false;
-  let resizeTimer;
+const statusEl   = document.getElementById("status");
+const startBtn   = document.getElementById("startBtn");
+const stopBtn    = document.getElementById("stopBtn");
+const cameraSel  = document.getElementById("cameraSelect");
+const guestBox   = document.getElementById("guestInfo");
+const guestText  = document.getElementById("guestDetails");
+const checkBtn   = document.getElementById("checkInBtn");
 
-  function setStatus(text, error = false) {
-    statusEl.textContent = text;
-    statusEl.classList.toggle("error", !!error);
-  }
+let html5Qr, isRunning=false, resizeTimer;
 
-  function parseGuestId(decodedText) {
-    try {
-      const url = new URL(decodedText);
-      return url.searchParams.get("id") || url.searchParams.get(DEST_PARAM);
-    } catch {
-      return decodedText && decodedText.trim().length ? decodedText.trim() : null;
+/* ---------- Helpers ---------- */
+function setStatus(t,err=false){
+  statusEl.textContent=t;
+  statusEl.classList.toggle("error",!!err);
+}
+function parseGuestId(decoded){
+  try{const u=new URL(decoded);return u.searchParams.get("id");}
+  catch{return decoded.trim()||null;}
+}
+
+/* ---------- QR Scanner ---------- */
+async function populateCameras(){
+  try{
+    const cams=await Html5Qrcode.getCameras();
+    cameraSel.innerHTML='<option disabled selected>Choose camera…</option>';
+    if(!cams.length){setStatus("⚠️ No cameras detected.",true);return;}
+    for(const c of cams){
+      const o=document.createElement("option");
+      o.value=c.id;o.textContent=c.label||"Camera";
+      cameraSel.appendChild(o);
     }
+    cameraSel.selectedIndex=1;
+  }catch{setStatus("⚠️ Unable to list cameras.",true);}
+}
+async function startScanner(){
+  try{
+    if(!html5Qr) html5Qr=new Html5Qrcode("reader",false);
+    const id=cameraSel.value||(await Html5Qrcode.getCameras())[0]?.id;
+    if(!id){setStatus("⚠️ Select a camera before starting.",true);return;}
+    await html5Qr.start({deviceId:{exact:id}},
+      {fps:12,qrbox:{width:320,height:320}},
+      onScanSuccess,()=>{});
+    isRunning=true;
+    startBtn.disabled=true;stopBtn.disabled=false;cameraSel.disabled=true;
+    setStatus("📷 Scanner running – align QR code inside the square.");
+  }catch(e){setStatus("❌ Cannot start scanner \n"+e.message,true);}
+}
+async function stopScanner(){
+  if(html5Qr&&isRunning){try{await html5Qr.stop();await html5Qr.clear();}catch{}}
+  isRunning=false;startBtn.disabled=false;stopBtn.disabled=true;cameraSel.disabled=false;
+  setStatus("Scanner stopped. Press Start to resume.");
+}
+
+/* ---------- Power Automate Integration ---------- */
+async function fetchGuestInfo(qrGuid){
+  setStatus("🔍 Fetching guest info…");
+  try{
+    const res=await fetch(getInfoUrl,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({id:qrGuid})
+    });
+    if(!res.ok) throw new Error("Guest not found");
+    const data=await res.json();
+    guestText.innerHTML=`<b>Name:</b> ${data.Name}<br><b>RSVP:</b> ${data.RSVP}`;
+    guestBox.style.display="block";
+    checkBtn.style.display="inline-block";
+    setStatus("✅ Guest record found.");
+    checkBtn.onclick=()=>checkInGuest(qrGuid);
+  }catch(e){
+    setStatus("❌ "+e.message,true);
+    guestBox.style.display="none";
   }
+}
+async function checkInGuest(qrGuid){
+  setStatus("⏳ Checking in…");
+  try{
+    const res=await fetch(checkInUrl,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({id:qrGuid})
+    });
+    if(!res.ok) throw new Error("Failed to check in");
+    const data=await res.json();
+    setStatus("✅ Checked in at "+data.timestamp);
+    checkBtn.style.display="none";
+  }catch(e){setStatus("❌ "+e.message,true);}
+}
 
-  function onScanSuccess(decodedText) {
-    const guestId = parseGuestId(decodedText);
-    if (!guestId) {
-      setStatus("❌ QR scanned, but no ID was found. Please try again.", true);
-      return;
-    }
-    setStatus("✅ Scanned successfully. Redirecting…");
-    stopScanner().finally(() => redirectToForm(guestId));
-  }
+/* ---------- On successful scan ---------- */
+function onScanSuccess(decoded){
+  const id=parseGuestId(decoded);
+  if(!id){setStatus("❌ QR scanned but no ID found.",true);return;}
+  stopScanner().finally(()=>fetchGuestInfo(id));
+}
 
-  function onScanFailure() {
-    // Silent failure — avoids UI spam
-  }
-
-  async function populateCameras() {
-    try {
-      const devices = await Html5Qrcode.getCameras();
-      cameraSelect.innerHTML = '<option value="" disabled selected>Choose camera…</option>';
-      if (!devices?.length) {
-        cameraSelect.innerHTML = '<option value="" disabled selected>No cameras found</option>';
-        setStatus("⚠️ No cameras detected. Make sure you are on HTTPS and granted camera access.", true);
-        return;
-      }
-      devices.sort((a, b) => {
-        const ab = /back|rear|environment/i.test(a.label);
-        const bb = /back|rear|environment/i.test(b.label);
-        return (bb - ab) || a.label.localeCompare(b.label);
-      });
-      for (const d of devices) {
-        const opt = document.createElement("option");
-        opt.value = d.id;
-        opt.textContent = d.label || `Camera ${cameraSelect.length}`;
-        cameraSelect.appendChild(opt);
-      }
-      cameraSelect.selectedIndex = 1;
-    } catch (e) {
-      setStatus("⚠️ Unable to list cameras. Use HTTPS and allow camera permissions.", true);
-    }
-  }
-
-  async function startScanner() {
-    try {
-      if (!html5Qr) html5Qr = new Html5Qrcode("reader", false);
-      const deviceId = cameraSelect.value || (await Html5Qrcode.getCameras())[0]?.id;
-      if (!deviceId) {
-        setStatus("⚠️ Select a camera before starting.", true);
-        return;
-      }
-      const config = {
-        fps: 12,
-        qrbox: computeQrbox(),
-        experimentalFeatures: { useBarCodeDetectorIfSupported: true }
-      };
-      await html5Qr.start({ deviceId: { exact: deviceId } }, config, onScanSuccess, onScanFailure);
-      isRunning = true;
-      startBtn.disabled = true;
-      stopBtn.disabled = false;
-      cameraSelect.disabled = true;
-      setStatus("📷 Scanner running. Align the QR code within the square.");
-    } catch (e) {
-      setStatus(`❌ Could not start the scanner.\n${e?.message || e}`, true);
-    }
-  }
-
-  async function stopScanner() {
-    if (html5Qr && isRunning) {
-      try {
-        await html5Qr.stop();
-        await html5Qr.clear();
-      } catch (_) {}
-    }
-    isRunning = false;
-    startBtn.disabled = false;
-    stopBtn.disabled = true;
-    cameraSelect.disabled = false;
-    setStatus("Scanner stopped. Press “Start Scan” to resume.");
-  }
-
-  window.addEventListener("resize", () => {
-    if (!isRunning) return;
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(async () => {
-      await stopScanner();
-      await startScanner();
-    }, 250);
-  });
-
-  startBtn.addEventListener("click", startScanner);
-  stopBtn.addEventListener("click", stopScanner);
-
-  (async () => {
-    if (location.protocol !== "https:") {
-      setStatus("ℹ️ Tip: Use HTTPS for camera access on most devices.");
-    }
-    await populateCameras();
-  })();
+/* ---------- Listeners ---------- */
+startBtn.addEventListener("click",startScanner);
+stopBtn.addEventListener("click",stopScanner);
+window.addEventListener("resize",()=>{
+  if(!isRunning) return;
+  clearTimeout(resizeTimer);
+  resizeTimer=setTimeout(()=>{stopScanner().then(startScanner);},250);
+});
+(async()=>{
+  if(location.protocol!=="https:")
+    setStatus("ℹ️ Tip: Use HTTPS for camera access.");
+  await populateCameras();
+})();
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
