@@ -2,50 +2,79 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Sultanate of Oman National Day – Check-In</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
     :root{
-      --brand:#006400;--bg:#f7f7f7;--card:#fff;--text:#222;--muted:#666;
-      --radius:14px;--shadow:0 8px 24px rgba(0,0,0,.08);
-      --success:#1b7f1b;--error:#b00020;
+      --brand:#006400; --bg:#f7f7f7; --card:#fff; --text:#222; --muted:#666;
+      --radius:16px; --shadow:0 10px 28px rgba(0,0,0,.10);
+      --success:#1b7f1b; --error:#b00020;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
-      margin:0;background:var(--bg);color:var(--text);
+      margin:0; background:var(--bg); color:var(--text);
       font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
-      display:grid;place-items:start center;padding:24px
+      display:grid; place-items:start center; padding:clamp(12px,3vw,24px);
     }
-    .card{width:100%;max-width:760px;background:var(--card);
-      border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 20px 24px}
-    header{text-align:center;padding:8px 12px 16px;
-      border-bottom:2px solid var(--brand);margin-bottom:16px}
-    header h1{margin:8px 0 0;font-size:clamp(20px,3.5vw,28px);color:var(--brand)}
-    header p{margin:6px 0 0;color:var(--muted);font-weight:600}
-    .flag{display:block;margin:0 auto 6px;height:40px;border-radius:6px;object-fit:cover}
-    .controls{display:grid;grid-template-columns:1fr;gap:12px;margin:14px 0 10px}
-    @media (min-width:560px){
-      .controls{grid-template-columns:1.2fr auto auto;align-items:center}
+    .card{
+      width:min(100%, 900px);
+      background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow);
+      padding:clamp(14px,3vw,24px);
     }
-    select,button{border-radius:10px;border:1px solid #ddd;
-      padding:10px 12px;font:inherit;background:#fff}
-    button{cursor:pointer;border:none;color:#fff;background:var(--brand);
-      transition:transform .07s ease,filter .2s ease}
+    header{
+      text-align:center; padding:8px 12px 16px;
+      border-bottom:2px solid var(--brand); margin-bottom:16px;
+    }
+    header h1{margin:8px 0 0; font-size:clamp(20px,3.5vw,30px); color:var(--brand)}
+    header p{margin:6px 0 0; color:var(--muted); font-weight:600}
+    .flag{display:block; margin:0 auto 6px; height:40px; border-radius:6px; object-fit:cover}
+
+    /* Controls */
+    .controls{
+      display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:center;
+      margin:14px 0 10px;
+    }
+    @media (min-width:640px){
+      .controls{ grid-template-columns:1fr auto auto; }
+    }
+    select,button{
+      border-radius:12px; border:1px solid #ddd; padding:12px 14px; font:inherit; background:#fff;
+    }
+    button{
+      cursor:pointer; border:none; color:#fff; background:var(--brand);
+      transition:transform .07s ease, filter .2s ease;
+    }
     button.secondary{background:#2f6f2f}
-    button:disabled{opacity:.55;cursor:not-allowed}
+    button:disabled{opacity:.6; cursor:not-allowed}
     button:active{transform:translateY(1px)}
-    .hint{font-size:13px;color:var(--muted)}
-    #reader-wrap{margin:14px auto 8px;width:100%;display:grid;place-items:center}
-    #reader{width:100%;max-width:680px;aspect-ratio:1/1;background:#000;
-      border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
-    .status{margin-top:12px;padding:12px;border-radius:10px;font-size:15px;
-      white-space:pre-line;background:#f0f6f0;color:var(--success);
-      border:1px solid #d9ebd9}
-    .status.error{background:#fdecec;color:var(--error);border:1px solid #f6caca}
-    #guestInfo{margin-top:18px;text-align:center;font-size:16px;display:none}
-    footer{margin-top:10px;text-align:center;color:var(--muted);font-size:12px}
+    .hint{grid-column:1/-1; font-size:13px; color:var(--muted)}
+
+    /* Scanner */
+    #scannerSection[hidden]{display:none}
+    #reader-wrap{margin:14px auto 8px; width:100%; display:grid; place-items:center}
+    #reader{
+      width:100%; max-width:760px; aspect-ratio:1/1; background:#000;
+      border-radius:14px; overflow:hidden; box-shadow:var(--shadow)
+    }
+
+    /* Status + Results */
+    .status{
+      margin-top:12px; padding:12px; border-radius:12px; font-size:clamp(14px,2.6vw,16px);
+      white-space:pre-line; background:#f0f6f0; color:var(--success); border:1px solid #d9ebd9
+    }
+    .status.error{background:#fdecec; color:var(--error); border:1px solid #f6caca}
+
+    #resultSection[hidden]{display:none}
+    #guestName{
+      text-align:center; margin:18px 0 10px;
+      font-size:clamp(22px,6vw,36px); font-weight:800; color:#111;
+    }
+    .actions{display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:10px}
+    .btn-xl{font-size:clamp(16px,3.8vw,18px); padding:14px 20px; border-radius:14px; min-width:160px}
+    .btn-ghost{background:#fff; color:var(--brand); border:2px solid var(--brand)}
+    footer{margin-top:14px; text-align:center; color:var(--muted); font-size:12px}
   </style>
 </head>
 <body>
@@ -58,87 +87,106 @@
     <p>Sultanate of Oman National Day 2025 – Check-In</p>
   </header>
 
-  <section class="controls" aria-label="Scanner Controls">
-    <select id="cameraSelect"><option disabled selected>Choose camera…</option></select>
-    <button id="startBtn" type="button">▶ Start Scan</button>
-    <button id="stopBtn" type="button" class="secondary" disabled>⏸ Stop</button>
-    <div class="hint" style="grid-column:1/-1">
-      Tip: allow camera access; best with the back camera.
+  <!-- Scanner UI -->
+  <section id="scannerSection" aria-label="Scanner Controls">
+    <div class="controls">
+      <!-- Limit to just two choices -->
+      <select id="cameraSelect" aria-label="Select camera">
+        <option value="environment" selected>Back Camera</option>
+        <option value="user">Front Camera</option>
+      </select>
+      <button id="startBtn" type="button">▶ Start Scan</button>
+      <button id="stopBtn" type="button" class="secondary" disabled>⏸ Stop</button>
+      <div class="hint">Tip: allow camera access; best with the back camera.</div>
     </div>
+
+    <div id="reader-wrap"><div id="reader"></div></div>
+    <div id="status" class="status">Waiting to start…</div>
   </section>
 
-  <div id="reader-wrap"><div id="reader"></div></div>
-
-  <div id="status" class="status">Waiting to start…</div>
-
-  <div id="guestInfo">
-    <p id="guestDetails"></p>
-    <button id="checkInBtn" style="display:none;">✅ Check In</button>
-  </div>
+  <!-- Result / Actions -->
+  <section id="resultSection" hidden aria-live="polite">
+    <div id="guestName">Name</div>
+    <div class="actions">
+      <button id="checkInBtn" class="btn-xl">✅ Check In</button>
+      <button id="anotherBtn" class="btn-xl btn-ghost">🔁 Another Guest</button>
+    </div>
+  </section>
 
   <footer>© 2025 Embassy of the Sultanate of Oman – Washington D.C.</footer>
 </main>
 
 <script>
 /* ---------- Configuration ---------- */
-// 🔗 Replace with your real Power Automate URLs
+// Replace with your real flow URLs (you already have them)
 const getInfoUrl  = "https://defaulta4f4a348105d4206a9482fbe287c3d.e7.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/64a46e6d2a5647f1a50ca08f74ad1c50/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=McrYsVeN6dNaAuDm2UJswGM3pupLzIqOw_fGjjq3mmE";
 const checkInUrl  = "https://defaulta4f4a348105d4206a9482fbe287c3d.e7.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/36be5d2104ea44b9bfe823690bed9fc1/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=iADfbzyikzjTVEpfX4z8i8hqb1VGAddbSmxxO4mtFDs";
 
-const statusEl   = document.getElementById("status");
-const startBtn   = document.getElementById("startBtn");
-const stopBtn    = document.getElementById("stopBtn");
-const cameraSel  = document.getElementById("cameraSelect");
-const guestBox   = document.getElementById("guestInfo");
-const guestText  = document.getElementById("guestDetails");
-const checkBtn   = document.getElementById("checkInBtn");
+const statusEl     = document.getElementById("status");
+const startBtn     = document.getElementById("startBtn");
+const stopBtn      = document.getElementById("stopBtn");
+const cameraSel    = document.getElementById("cameraSelect");
 
-let html5Qr, isRunning=false, resizeTimer;
+const scannerSection = document.getElementById("scannerSection");
+const resultSection  = document.getElementById("resultSection");
+const guestNameEl    = document.getElementById("guestName");
+const checkBtn       = document.getElementById("checkInBtn");
+const anotherBtn     = document.getElementById("anotherBtn");
+
+let html5Qr, isRunning=false, resizeTimer, lastQrGuid=null;
 
 /* ---------- Helpers ---------- */
-function setStatus(t,err=false){
-  statusEl.textContent=t;
-  statusEl.classList.toggle("error",!!err);
+function setStatus(t, err=false){
+  statusEl.textContent = t;
+  statusEl.classList.toggle("error", !!err);
 }
 function parseGuestId(decoded){
-  try{const u=new URL(decoded);return u.searchParams.get("id");}
-  catch{return decoded.trim()||null;}
+  try { const u = new URL(decoded); return u.searchParams.get("id"); }
+  catch { return decoded.trim() || null; }
+}
+function qrboxSize(){
+  const w = Math.min(window.innerWidth, 900); // card max
+  return { width: Math.round(w*0.9), height: Math.round(w*0.9) }; // square, responsive
 }
 
-/* ---------- QR Scanner ---------- */
-async function populateCameras(){
-  try{
-    const cams=await Html5Qrcode.getCameras();
-    cameraSel.innerHTML='<option disabled selected>Choose camera…</option>';
-    if(!cams.length){setStatus("⚠️ No cameras detected.",true);return;}
-    for(const c of cams){
-      const o=document.createElement("option");
-      o.value=c.id;o.textContent=c.label||"Camera";
-      cameraSel.appendChild(o);
-    }
-    cameraSel.selectedIndex=1;
-  }catch{setStatus("⚠️ Unable to list cameras.",true);}
-}
+/* ---------- Scanner ---------- */
 async function startScanner(){
   try{
-    if(!html5Qr) html5Qr=new Html5Qrcode("reader",false);
-    const id=cameraSel.value||(await Html5Qrcode.getCameras())[0]?.id;
-    if(!id){setStatus("⚠️ Select a camera before starting.",true);return;}
-    await html5Qr.start({deviceId:{exact:id}},
-      {fps:12,qrbox:{width:320,height:320}},
-      onScanSuccess,()=>{});
-    isRunning=true;
-    startBtn.disabled=true;stopBtn.disabled=false;cameraSel.disabled=true;
+    if(!html5Qr) html5Qr = new Html5Qrcode("reader", false);
+    const facing = cameraSel.value || "environment"; // "environment" or "user"
+
+    const constraints = { facingMode: facing };
+    const config = { fps: 12, qrbox: qrboxSize(), experimentalFeatures: { useBarCodeDetectorIfSupported: true } };
+
+    await html5Qr.start(constraints, config, onScanSuccess, () => {});
+    isRunning = true;
+    startBtn.disabled = true;
+    stopBtn.disabled  = false;
+    cameraSel.disabled = true;
     setStatus("📷 Scanner running – align QR code inside the square.");
-  }catch(e){setStatus("❌ Cannot start scanner \n"+e.message,true);}
+  }catch(e){
+    // Fallback: try default camera if facingMode isn't supported
+    try{
+      await html5Qr.start({ facingMode: "environment" }, { fps:12, qrbox: qrboxSize() }, onScanSuccess, () => {});
+      isRunning = true; startBtn.disabled = true; stopBtn.disabled = false; cameraSel.disabled = true;
+      setStatus("📷 Scanner running (fallback).");
+    }catch(err){
+      setStatus("❌ Cannot start scanner\n" + (err?.message || err), true);
+    }
+  }
 }
 async function stopScanner(){
-  if(html5Qr&&isRunning){try{await html5Qr.stop();await html5Qr.clear();}catch{}}
-  isRunning=false;startBtn.disabled=false;stopBtn.disabled=true;cameraSel.disabled=false;
+  if(html5Qr && isRunning){
+    try{ await html5Qr.stop(); await html5Qr.clear(); }catch(_){}
+  }
+  isRunning = false;
+  startBtn.disabled = false;
+  stopBtn.disabled  = true;
+  cameraSel.disabled = false;
   setStatus("Scanner stopped. Press Start to resume.");
 }
 
-/* ---------- Power Automate Integration ---------- */
+/* ---------- Flow Integration ---------- */
 async function fetchGuestInfo(qrGuid){
   setStatus("🔍 Fetching guest info…");
   try{
@@ -147,68 +195,78 @@ async function fetchGuestInfo(qrGuid){
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: qrGuid })
     });
-
-    if (!res.ok) throw new Error("Guest not found");
+    if(!res.ok) throw new Error("Guest not found");
 
     const data = await res.json();
 
-    // ✅ Clean RSVP if SharePoint returned a Choice object
-    guestText.innerHTML = `<b>Name:</b> ${data.Name}`;
-    guestBox.style.display = "block";
+    // Show result view
+    lastQrGuid = qrGuid;
+    guestNameEl.textContent = `Name: ${data.Name}`;
+    scannerSection.hidden = true;     // hide scanner
+    resultSection.hidden  = false;    // show actions
+    setStatus(`✅ Guest record found. Welcome, ${data.Name}!`, false);
 
-    // ✅ Friendlier green status message (this is the line you asked about)
-    setStatus(`✅ Guest record found. Welcome, ${data.Name}!`);
+    // Wire buttons
+    checkBtn.onclick  = () => checkInGuest(qrGuid);
+    anotherBtn.onclick = resetToScanner;
 
-    // Show the Check In button and wire it up
-    checkBtn.style.display = "inline-block";
-    checkBtn.onclick = () => checkInGuest(qrGuid);
-
-  } catch (e) {
-    setStatus("❌ " + e.message, true);
-    guestBox.style.display = "none";
+  } catch(e){
+    setStatus("❌ " + (e.message || e), true);
+    // Show scanner again in case of error
+    scannerSection.hidden = false;
+    resultSection.hidden  = true;
   }
 }
-
 async function checkInGuest(qrGuid){
   setStatus("⏳ Checking in…");
   try{
-    const res=await fetch(checkInUrl,{
+    const res  = await fetch(checkInUrl, {
       method:"POST",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({id:qrGuid})
+      body:JSON.stringify({ id: qrGuid })
     });
-    if(!res.ok) throw new Error("Failed to check in");
-    const data=await res.json();
-    setStatus("✅ Checked in at "+data.timestamp);
-    checkBtn.style.display="none";
-  }catch(e){setStatus("❌ "+e.message,true);}
+
+    const text = await res.text(); // read raw text for better error details
+    if(!res.ok) throw new Error(`HTTP ${res.status} – ${text.slice(0,200)}`);
+
+    let data={}; try{ data = JSON.parse(text); }catch{}
+    const ts = data.timestamp || new Date().toISOString();
+
+    setStatus(`✅ Checked in at ${ts}`);
+    checkBtn.disabled = true;
+    checkBtn.textContent = "✅ Checked In";
+  }catch(e){
+    setStatus("❌ Failed to check in: " + (e.message || e), true);
+  }
+}
+function resetToScanner(){
+  // Clear UI and re-open scanner quickly for next guest
+  resultSection.hidden  = true;
+  scannerSection.hidden = false;
+  setStatus("Ready for next guest. Press Start Scan.");
+  startScanner();
 }
 
-/* ---------- On successful scan ---------- */
+/* ---------- Scan Handler ---------- */
 function onScanSuccess(decoded){
-  const id=parseGuestId(decoded);
-  if(!id){setStatus("❌ QR scanned but no ID found.",true);return;}
-  stopScanner().finally(()=>fetchGuestInfo(id));
+  const id = parseGuestId(decoded);
+  if(!id){ setStatus("❌ QR scanned but no ID found.", true); return; }
+  stopScanner().finally(() => fetchGuestInfo(id));
 }
 
 /* ---------- Listeners ---------- */
-startBtn.addEventListener("click",startScanner);
-stopBtn.addEventListener("click",stopScanner);
-window.addEventListener("resize",()=>{
+startBtn.addEventListener("click", startScanner);
+stopBtn.addEventListener("click", stopScanner);
+window.addEventListener("resize", () => {
   if(!isRunning) return;
   clearTimeout(resizeTimer);
-  resizeTimer=setTimeout(()=>{stopScanner().then(startScanner);},250);
+  resizeTimer = setTimeout(() => { stopScanner().then(startScanner); }, 250);
 });
-(async()=>{
-  if(location.protocol!=="https:")
-    setStatus("ℹ️ Tip: Use HTTPS for camera access.");
-  await populateCameras();
+
+/* ---------- Init ---------- */
+(function init(){
+  if(location.protocol !== "https:") setStatus("ℹ️ Tip: Use HTTPS for camera access.");
 })();
 </script>
 </body>
 </html>
-
-
-
-
-
