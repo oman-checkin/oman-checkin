@@ -1,0 +1,74 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Flow Test · GetCheckInDashboard</title>
+<style>
+  body{font:16px system-ui, -apple-system, Segoe UI, Roboto, Arial; margin:24px; color:#222}
+  label{display:block; margin:.5rem 0 .25rem; font-weight:600}
+  input,textarea,button{font:inherit}
+  input, textarea{width:100%; box-sizing:border-box; padding:.6rem .7rem; border:1px solid #ccc; border-radius:10px}
+  textarea{height:220px; white-space:pre-wrap}
+  .row{display:grid; gap:.75rem; grid-template-columns:1fr auto}
+  button{padding:.7rem 1.1rem; border:0; border-radius:10px; background:#006400; color:#fff; cursor:pointer}
+  button:disabled{opacity:.6; cursor:not-allowed}
+  .muted{color:#666; font-size:.9rem}
+  .ok{color:#1b7f1b}
+  .err{color:#b00020}
+</style>
+
+<h1>Test: Power Automate HTTP Flow</h1>
+
+<label>Flow URL (paste full URL including <code>&sig=</code>)</label>
+<input id="url" placeholder="https://defaulta4f4a348105d4206a9482fbe287c3d.e7.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/9613844c0e184cc0bd7e42d51980b155/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=9STzl35vaLyLWAg8yVXpKnuz2jrrW0qaq94bnnGe7qA">
+
+<div class="row" style="margin-top:.75rem">
+  <div>
+    <label>JSON Body</label>
+    <textarea id="body">{ "top": 5 }</textarea>
+    <div class="muted">Tip: leave as <code>{"top":5}</code> or use <code>{}</code> if you didn’t add the <em>top</em> parameter.</div>
+  </div>
+  <div style="align-self:end">
+    <button id="send">Send POST</button>
+  </div>
+</div>
+
+<label style="margin-top:1rem">Status</label>
+<div id="status" class="muted">Waiting…</div>
+
+<label style="margin-top:.5rem">Response</label>
+<textarea id="out" placeholder="Response will appear here"></textarea>
+
+<script>
+const $ = s => document.querySelector(s);
+const url = $("#url"), body = $("#body"), out = $("#out"), status = $("#status"), send = $("#send");
+
+async function post() {
+  const u = url.value.trim();
+  if (!u) { alert("Paste the full flow URL (must include &sig=)."); return; }
+  let payload = {};
+  try { payload = body.value.trim() ? JSON.parse(body.value) : {}; }
+  catch { alert("Body is not valid JSON."); return; }
+
+  send.disabled = true; status.textContent = "Sending…"; out.value = "";
+  try {
+    const res = await fetch(u, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const text = await res.text();
+    status.innerHTML = (res.ok ? `<b class="ok">${res.status} ${res.statusText}</b>` :
+                                 `<b class="err">${res.status} ${res.statusText}</b>`);
+    out.value = text;
+  } catch (e) {
+    status.innerHTML = `<b class="err">Network error</b>`;
+    out.value = e?.message || String(e);
+  } finally {
+    send.disabled = false;
+  }
+}
+
+send.addEventListener("click", post);
+
+// Optional: prefill URL if you want to hardcode it here once
+// url.value = "PASTE_YOUR_FULL_FLOW_URL_WITH_sig_HERE";
+</script>
