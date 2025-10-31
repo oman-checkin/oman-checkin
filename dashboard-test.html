@@ -1,526 +1,541 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Event Check-In Dashboard</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 40px;
-        }
-
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-        }
-
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-
-        .controls {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            margin-bottom: 30px;
-        }
-
-        .controls-grid {
-            display: grid;
-            grid-template-columns: 1fr auto auto;
-            gap: 15px;
-            align-items: end;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group label {
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #333;
-            font-size: 0.9rem;
-        }
-
-        .form-group input {
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.3s;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .btn {
-            padding: 12px 30px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-            transform: translateY(-2px);
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            text-align: center;
-            transition: transform 0.3s;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .stat-card .icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
-        }
-
-        .stat-card .number {
-            font-size: 3rem;
-            font-weight: bold;
-            color: #667eea;
-            margin-bottom: 10px;
-        }
-
-        .stat-card .label {
-            font-size: 1.1rem;
-            color: #666;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .stat-card.total .icon { color: #667eea; }
-        .stat-card.checked-in .icon { color: #10b981; }
-        .stat-card.not-checked .icon { color: #ef4444; }
-
-        .stat-card.total .number { color: #667eea; }
-        .stat-card.checked-in .number { color: #10b981; }
-        .stat-card.not-checked .number { color: #ef4444; }
-
-        .guest-list {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-
-        .guest-list h2 {
-            margin-bottom: 20px;
-            color: #333;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .guest-list h2 .badge {
-            background: #667eea;
-            color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-        }
-
-        .guest-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .guest-table thead {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .guest-table th,
-        .guest-table td {
-            padding: 15px;
-            text-align: left;
-        }
-
-        .guest-table th {
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.5px;
-        }
-
-        .guest-table tbody tr {
-            border-bottom: 1px solid #e0e0e0;
-            transition: background-color 0.2s;
-        }
-
-        .guest-table tbody tr:hover {
-            background-color: #f8f9fa;
-        }
-
-        .guest-table tbody tr:last-child {
-            border-bottom: none;
-        }
-
-        .qr-code {
-            font-family: monospace;
-            background: #f0f0f0;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 0.85rem;
-        }
-
-        .timestamp {
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-        }
-
-        .loading .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .error {
-            background: #fee;
-            border: 2px solid #fcc;
-            color: #c33;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #999;
-        }
-
-        .empty-state .icon {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
-
-        .last-updated {
-            text-align: center;
-            color: white;
-            margin-top: 20px;
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 1.8rem;
-            }
-
-            .controls-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .guest-table {
-                font-size: 0.85rem;
-            }
-
-            .guest-table th,
-            .guest-table td {
-                padding: 10px 8px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Event Check-In Dashboard</title>
+  <meta http-equiv="Cache-Control" content="no-store" />
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --p1:#667eea;--p2:#764ba2;
+      --ok:#10b981;--warn:#ef4444;--ink:#333;--muted:#666;--bg:#f9f9f9;
+      --card:#fff;--ring:#e0e0e0;--shadow:0 10px 30px rgba(0,0,0,.2)
+    }
+    body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:linear-gradient(135deg,var(--p1) 0%,var(--p2) 100%);min-height:100vh;padding:20px}
+    .container{max-width:1200px;margin:0 auto}
+    .header{text-align:center;color:#fff;margin-bottom:32px}
+    .header h1{font-size:2.2rem;margin-bottom:6px;text-shadow:2px 2px 4px rgba(0,0,0,.2)}
+    .header p{opacity:.9}
+    .controls,.guest-list,.stat-card{background:var(--card);border-radius:15px;box-shadow:var(--shadow)}
+    .controls{padding:16px 20px;margin-bottom:20px}
+    .controls-grid{display:grid;grid-template-columns:1.5fr .8fr auto auto auto;gap:12px;align-items:end}
+    .form-group{display:flex;flex-direction:column}
+    label{font-weight:600;margin-bottom:6px;color:var(--ink);font-size:.9rem}
+    input[type="text"],input[type="number"]{padding:12px;border:2px solid var(--ring);border-radius:8px;font-size:1rem}
+    input:focus{outline:none;border-color:var(--p1)}
+    .btn{padding:12px 16px;border:none;border-radius:8px;font-size:.95rem;font-weight:700;cursor:pointer;transition:transform .2s,box-shadow .2s;text-transform:uppercase;letter-spacing:.5px}
+    .btn-primary{background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 5px 15px rgba(102,126,234,.4)}
+    .btn-secondary{background:#6c757d;color:#fff}
+    .btn-secondary:hover{transform:translateY(-2px);background:#5a6268}
+    .btn-ghost{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.7)}
+    .btn:disabled{opacity:.6;cursor:not-allowed;transform:none!important}
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-bottom:20px}
+    .stat-card{padding:24px;text-align:center;transition:transform .2s}
+    .stat-card:hover{transform:translateY(-4px)}
+    .stat-card .icon{font-size:2.6rem;margin-bottom:10px}
+    .number{font-size:2.4rem;font-weight:800;margin-bottom:6px}
+    .label{font-size:1rem;color:#666;text-transform:uppercase;letter-spacing:.8px}
+    .total .icon,.total .number{color:var(--p1)}
+    .checked-in .icon,.checked-in .number{color:var(--ok)}
+    .not-checked .icon,.not-checked .number{color:var(--warn)}
+    .guest-list{padding:20px}
+    .guest-list h2{margin-bottom:12px;color:var(--ink);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .badge{background:var(--p1);color:#fff;padding:4px 12px;border-radius:999px;font-size:.85rem}
+    .table-actions{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 16px}
+    .search{flex:1;min-width:220px}
+    .guest-table{width:100%;border-collapse:collapse}
+    .guest-table thead{background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff}
+    th,td{padding:12px 10px;text-align:left}
+    th{font-weight:700;text-transform:uppercase;font-size:.8rem;letter-spacing:.6px;user-select:none;cursor:pointer;white-space:nowrap}
+    tbody tr{border-bottom:1px solid var(--ring);transition:background-color .15s}
+    tbody tr:hover{background:#f8f9fa}
+    .qr-code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#f0f0f0;padding:4px 8px;border-radius:6px;font-size:.85rem}
+    .timestamp{color:var(--muted);font-size:.9rem;white-space:nowrap}
+    .loading{text-align:center;padding:36px;color:#fff}
+    .spinner{border:4px solid rgba(255,255,255,.35);border-top:4px solid #fff;border-radius:50%;width:42px;height:42px;animation:spin 1s linear infinite;margin:0 auto 12px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .error{background:#fee;border:2px solid #fcc;color:#c33;padding:16px;border-radius:10px;margin-bottom:16px}
+    .empty-state{text-align:center;padding:50px 12px;color:#999}
+    .empty-state .icon{font-size:3.2rem;margin-bottom:12px;opacity:.5}
+    .last-updated{text-align:center;color:#fff;margin-top:16px;font-size:.9rem;opacity:.85}
+    .pill{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.35)}
+    .row-actions a{font-size:.85rem}
+    @media(max-width:900px){.controls-grid{grid-template-columns:1fr 1fr;grid-auto-rows:auto}}
+    @media(max-width:680px){.controls-grid{grid-template-columns:1fr}}
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🎉 Event Check-In Dashboard</h1>
-            <p>Real-time monitoring of guest arrivals</p>
-        </div>
-
-        <div class="controls">
-            <div class="controls-grid">
-                <div class="form-group">
-                    <label for="flowUrl">Power Automate Flow URL</label>
-                    <input 
-                        type="text" 
-                        id="flowUrl" 
-                        placeholder="https://prod-xx.westus.logic.azure.com:443/workflows/..."
-                        value="https://defaulta4f4a348105d4206a9482fbe287c3d.e7.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/9613844c0e184cc0bd7e42d51980b155/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=9STzl35vaLyLWAg8yVXpKnuz2jrrW0qaq94bnnGe7qA">
-                </div>
-                <div class="form-group">
-                    <label for="topCount">Top Results</label>
-                    <input 
-                        type="number" 
-                        id="topCount" 
-                        value="50" 
-                        min="1" 
-                        max="1000">
-                </div>
-                <button class="btn btn-primary" id="loadBtn" onclick="loadDashboard()">
-                    Load Dashboard
-                </button>
-                <button class="btn btn-secondary" id="refreshBtn" onclick="loadDashboard()" style="display:none;">
-                    Refresh
-                </button>
-            </div>
-        </div>
-
-        <div id="error" class="error" style="display:none;"></div>
-
-        <div id="loading" class="loading" style="display:none;">
-            <div class="spinner"></div>
-            <p>Loading dashboard data...</p>
-        </div>
-
-        <div id="dashboard" style="display:none;">
-            <div class="stats-grid">
-                <div class="stat-card total">
-                    <div class="icon">👥</div>
-                    <div class="number" id="totalGuests">0</div>
-                    <div class="label">Total Guests</div>
-                </div>
-                <div class="stat-card checked-in">
-                    <div class="icon">✅</div>
-                    <div class="number" id="checkedInGuests">0</div>
-                    <div class="label">Checked In</div>
-                </div>
-                <div class="stat-card not-checked">
-                    <div class="icon">⏳</div>
-                    <div class="number" id="notCheckedGuests">0</div>
-                    <div class="label">Not Checked In</div>
-                </div>
-            </div>
-
-            <div class="guest-list">
-                <h2>
-                    Checked-In Guests 
-                    <span class="badge" id="guestCount">0</span>
-                </h2>
-                <div id="guestTableContainer"></div>
-            </div>
-
-            <div class="last-updated" id="lastUpdated"></div>
-        </div>
+  <div class="container" role="main">
+    <div class="header" aria-live="polite">
+      <h1>🎉 Event Check-In Dashboard</h1>
+      <p>Real-time monitoring of guest arrivals</p>
     </div>
 
-    <script>
-        let flowUrl = '';
+    <div class="controls" aria-label="Controls">
+      <div class="controls-grid">
+        <div class="form-group">
+          <label for="flowUrl">Power Automate Flow URL</label>
+          <input type="text" id="flowUrl"
+  value="https://defaulta4f4a348105d4206a9482fbe287c3d.e7.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/9613844c0e184cc0bd7e42d51980b155/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=9STzl35vaLyLWAg8yVXpKnuz2jrrW0qaq94bnnGe7qA"
+  hidden />
 
-        async function loadDashboard() {
-            const urlInput = document.getElementById('flowUrl');
-            const topCount = document.getElementById('topCount').value;
-            const errorDiv = document.getElementById('error');
-            const loadingDiv = document.getElementById('loading');
-            const dashboardDiv = document.getElementById('dashboard');
+        </div>
+        <div class="form-group">
+          <label for="topCount">Top Results</label>
+          <input type="number" id="topCount" value="50" min="1" max="2000" />
+        </div>
+        <button class="btn btn-primary" id="loadBtn" aria-label="Load Dashboard">Load</button>
+        <button class="btn btn-secondary" id="refreshBtn" style="display:none" aria-label="Refresh Dashboard">Refresh</button>
+        <button class="btn btn-secondary" id="exportBtn" style="display:none" aria-label="Export CSV">Export CSV</button>
+      </div>
 
-            // Get URL from input
-            flowUrl = urlInput.value.trim();
+      <div style="display:flex; gap:12px; align-items:center; margin-top:12px; flex-wrap:wrap">
+        <span class="pill">Auto-refresh:
+          <label style="margin-left:8px; user-select:none">
+            <input type="checkbox" id="autoToggle" checked />
+            <span style="margin-left:6px">On (30s)</span>
+          </label>
+        </span>
+        <span class="pill" id="timerPill" aria-live="polite">Next refresh in 30s</span>
+        <button class="btn btn-ghost" id="saveUrlBtn" title="Save URL locally (browser only)">Save URL</button>
+        <button class="btn btn-ghost" id="clearUrlBtn" title="Clear saved URL">Clear URL</button>
+      </div>
+    </div>
 
-            if (!flowUrl) {
-                showError('Please enter your Power Automate Flow URL');
-                return;
-            }
+    <div id="error" class="error" style="display:none"></div>
 
-            // Hide error and dashboard
-            errorDiv.style.display = 'none';
-            dashboardDiv.style.display = 'none';
-            loadingDiv.style.display = 'block';
+    <div id="loading" class="loading" style="display:none">
+      <div class="spinner"></div>
+      <p>Loading dashboard data…</p>
+    </div>
 
-            try {
-                const response = await fetch(flowUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ top: parseInt(topCount) }),
-                    mode: 'cors'
-                });
+    <div id="dashboard" style="display:none">
+      <div class="stats-grid" role="region" aria-label="Summary statistics">
+        <div class="stat-card total">
+          <div class="icon">👥</div>
+          <div class="number" id="totalGuests">0</div>
+          <div class="label">Total Guests</div>
+        </div>
+        <div class="stat-card checked-in">
+          <div class="icon">✅</div>
+          <div class="number" id="checkedInGuests">0</div>
+          <div class="label">Checked In</div>
+        </div>
+        <div class="stat-card not-checked">
+          <div class="icon">⏳</div>
+          <div class="number" id="notCheckedGuests">0</div>
+          <div class="label">Not Checked In</div>
+        </div>
+      </div>
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
-                }
+      <div class="guest-list" role="region" aria-label="Checked-in guests">
+        <h2>Checked-In Guests <span class="badge" id="guestCount">0</span></h2>
 
-                const data = await response.json();
-                
-                // Update dashboard
-                updateDashboard(data);
-                
-                // Show dashboard and hide loading
-                loadingDiv.style.display = 'none';
-                dashboardDiv.style.display = 'block';
+        <div class="table-actions">
+          <input id="searchBox" class="search" type="text" placeholder="Search by name, email, or QR…" aria-label="Search guests" />
+        </div>
 
-                // Show refresh button
-                document.getElementById('loadBtn').style.display = 'none';
-                document.getElementById('refreshBtn').style.display = 'block';
+        <div id="guestTableContainer"></div>
+      </div>
 
-                // Update last updated time
-                document.getElementById('lastUpdated').textContent = 
-                    `Last updated: ${new Date().toLocaleString()}`;
+      <div class="last-updated" id="lastUpdated"></div>
+    </div>
+  </div>
 
-            } catch (error) {
-                loadingDiv.style.display = 'none';
-                showError(`Failed to load dashboard: ${error.message}`);
-            }
+  <script>
+    // ---------- Utilities ----------
+    const $ = (id) => document.getElementById(id);
+    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+    // Prefer user's timezone
+    const formatDT = (v) => {
+      if (!v) return "N/A";
+      try {
+        const d = (v instanceof Date) ? v : new Date(v);
+        if (isNaN(d)) return "N/A";
+        return d.toLocaleString();
+      } catch { return "N/A"; }
+    };
+
+    // Safe field extraction across inconsistent payloads
+    const getField = (obj, variants = []) => {
+      for (const key of variants) {
+        if (obj && Object.prototype.hasOwnProperty.call(obj, key) && obj[key] != null && obj[key] !== "") {
+          return obj[key];
         }
+      }
+      // Try loose match on case/spacing
+      const lowerKeys = Object.keys(obj || {}).reduce((map, k) => (map[k.toLowerCase()] = k, map), {});
+      for (const v of variants) {
+        const lk = v.toLowerCase();
+        if (lowerKeys[lk] && obj[lowerKeys[lk]] != null && obj[lowerKeys[lk]] !== "") return obj[lowerKeys[lk]];
+      }
+      return undefined;
+    };
 
-        function updateDashboard(data) {
-            // Update summary stats
-            document.getElementById('totalGuests').textContent = data.summary.total || 0;
-            document.getElementById('checkedInGuests').textContent = data.summary.checkedIn || 0;
-            document.getElementById('notCheckedGuests').textContent = data.summary.notChecked || 0;
+    // Count extraction for SharePoint/PowerAutomate oddities
+    const getCount = (root) => {
+      if (!root) return 0;
+      const direct = getField(root, ["total", "Total", "count", "@odata.count"]);
+      if (direct !== undefined) return Number(direct) || 0;
+      const dCount = getField(root, ["d"]);
+      if (dCount && (dCount.__count || dCount["@odata.count"])) return Number(dCount.__count || dCount["@odata.count"]) || 0;
+      // Try arrays we often see
+      const arrays = [
+        getField(root, ["checkedIn", "Select_CheckedIn_Rows"]),
+        getField(root, ["all", "value", "rows", "items"])
+      ].filter(Boolean);
+      if (arrays.length && Array.isArray(arrays[0])) return arrays[0].length;
+      return 0;
+    };
 
-            // Update guest count badge
-            const guestCount = data.checkedIn ? data.checkedIn.length : 0;
-            document.getElementById('guestCount').textContent = guestCount;
+    // Normalize any incoming shape into { summary, checkedIn }
+    const normalizeData = (data) => {
+      if (!data || typeof data !== "object") return { summary: { total: 0, checkedIn: 0, notChecked: 0 }, checkedIn: [] };
 
-            // Update guest table
-            const tableContainer = document.getElementById('guestTableContainer');
-            
-            if (!data.checkedIn || data.checkedIn.length === 0) {
-                tableContainer.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">📋</div>
-                        <h3>No checked-in guests yet</h3>
-                        <p>Guests will appear here once they check in</p>
-                    </div>
-                `;
-                return;
-            }
+      // 1) Summary candidates
+      const summaryBlock =
+        getField(data, ["summary", "Summary", "Compose_Summary"]) || {};
 
-            // Create table
-            let tableHTML = `
-                <table class="guest-table">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>QR Code</th>
-                            <th>Check-In Time</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
+      let total = Number(getField(summaryBlock, ["total", "Total"])) || getCount(data) || 0;
+      let checkedInTotal = Number(getField(summaryBlock, ["checkedIn", "CheckedIn", "checked_in"])) || 0;
+      let notChecked = Number(getField(summaryBlock, ["notChecked", "NotChecked", "not_checked"])) || 0;
 
-            data.checkedIn.forEach((guest, index) => {
-                const timestamp = guest.CheckInTimestamp 
-                    ? new Date(guest.CheckInTimestamp).toLocaleString() 
-                    : 'N/A';
-                
-                tableHTML += `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td><strong>${guest.Name || 'N/A'}</strong></td>
-                        <td>${guest.Email || 'N/A'}</td>
-                        <td><span class="qr-code">${guest.QR_GUID || 'N/A'}</span></td>
-                        <td><span class="timestamp">${timestamp}</span></td>
-                    </tr>
-                `;
-            });
+      // If not provided, derive from arrays
+      const checkedInArray =
+        getField(data, ["checkedIn", "CheckedIn"]) ||
+        getField(data, ["Select_CheckedIn_Rows"]) ||
+        []; // may be filled later
 
-            tableHTML += `
-                    </tbody>
-                </table>
-            `;
+      // Maybe SharePoint "value" with a Status/Timestamp meaning checked-in
+      let rawArray = checkedInArray;
+      if (!Array.isArray(rawArray)) {
+        rawArray = getField(data, ["value", "items", "rows"]) || [];
+      }
 
-            tableContainer.innerHTML = tableHTML;
+      // Try to detect which entries are "checked-in"
+      let normalizedCheckedIn = [];
+      if (Array.isArray(checkedInArray) && checkedInArray.length) {
+        normalizedCheckedIn = checkedInArray;
+      } else if (Array.isArray(rawArray) && rawArray.length) {
+        normalizedCheckedIn = rawArray.filter(r => {
+          const ts = getField(r, ["CheckInTimestamp", "CheckInTime", "Modified", "Created", "checkin", "timestamp"]);
+          const status = String(getField(r, ["Status", "CheckInStatus", "CheckedIn"]))?.toLowerCase();
+          return !!ts || status === "yes" || status === "true" || status === "checkedin";
+        });
+      }
+
+      if (!checkedInTotal) checkedInTotal = normalizedCheckedIn.length;
+      if (!notChecked && total >= checkedInTotal) notChecked = total - checkedInTotal;
+
+      // Normalize guest fields to a clean shape for the table
+      const mapGuest = (g) => {
+        const name = getField(g, ["Name","FullName","GuestName","FirstName"]) || "N/A";
+        const email = getField(g, ["Email","EmailAddress","Mail"]) || "N/A";
+        const qr = getField(g, ["QR_GUID","QRCode","QRId","QR","QrCode"]) || "N/A";
+        const tsv = getField(g, ["CheckInTimestamp","CheckInTime","Modified","Created","Timestamp"]);
+        return {
+          Name: String(name),
+          Email: String(email),
+          QR_GUID: String(qr),
+          CheckInTimestamp: tsv ? new Date(tsv) : null,
+          _raw: g
+        };
+      };
+
+      const cleaned = (normalizedCheckedIn || []).map(mapGuest);
+
+      // If total is still zero but we have guests, set it
+      if (!total && cleaned.length) total = cleaned.length;
+
+      return {
+        summary: { total, checkedIn: checkedInTotal, notChecked },
+        checkedIn: cleaned
+      };
+    };
+
+    // Sorting
+    let sortState = { key: "CheckInTimestamp", dir: "desc" };
+    const sorters = {
+      "#": (a,b) => 0,
+      "Name": (a,b) => a.Name.localeCompare(b.Name),
+      "Email": (a,b) => a.Email.localeCompare(b.Email),
+      "QR Code": (a,b) => a.QR_GUID.localeCompare(b.QR_GUID),
+      "Check-In Time": (a,b) => (a.CheckInTimestamp?.getTime()||0) - (b.CheckInTimestamp?.getTime()||0),
+    };
+
+    // ---------- State ----------
+    let flowUrl = "";
+    let lastData = { summary: { total:0, checkedIn:0, notChecked:0 }, checkedIn: [] };
+    let filteredRows = [];
+    let countdown = 30;
+    let tickHandle = null;
+
+    // ---------- Networking ----------
+    async function fetchData(url, top) {
+      // Basic POST to Power Automate manual trigger with JSON body { top: n }
+      const resp = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept":"application/json" },
+        body: JSON.stringify({ top: Number(top)||50 }),
+        mode: "cors"
+      });
+      if (!resp.ok) {
+        const txt = await resp.text().catch(()=> "");
+        throw new Error(`HTTP ${resp.status} ${resp.statusText}${txt ? ` – ${txt.slice(0,140)}` : ""}`);
+      }
+      // Some Flow steps may return text; try to parse anyway
+      const text = await resp.text();
+      try { return JSON.parse(text); } catch { return { value: [], raw: text }; }
+    }
+
+    // ---------- UI wiring ----------
+    $("loadBtn").addEventListener("click", () => loadDashboard());
+    $("refreshBtn").addEventListener("click", () => loadDashboard(true));
+    $("exportBtn").addEventListener("click", () => exportCSV());
+    $("saveUrlBtn").addEventListener("click", () => {
+      const u = $("flowUrl").value.trim();
+      if (!u) return alert("Paste your Flow URL first.");
+      localStorage.setItem("checkin.flowUrl", u);
+      alert("Saved locally to this browser.");
+    });
+    $("clearUrlBtn").addEventListener("click", () => {
+      localStorage.removeItem("checkin.flowUrl");
+      $("flowUrl").value = "";
+      alert("Cleared saved URL from this browser.");
+    });
+
+    $("autoToggle").addEventListener("change", (e) => {
+      if (e.target.checked) startTimer(); else stopTimer();
+    });
+
+    $("searchBox").addEventListener("input", () => {
+      applySearch();
+      renderTable();
+    });
+
+    // Load saved URL if present
+    (function init() {
+      const saved = localStorage.getItem("checkin.flowUrl");
+      if (saved) $("flowUrl").value = saved;
+      startTimer();
+    })();
+
+    async function loadDashboard(isRefresh=false) {
+      const urlInput = $("flowUrl").value.trim();
+      const topCount = $("topCount").value;
+
+      if (!urlInput) return showError("Please enter your Power Automate Flow URL.");
+      flowUrl = urlInput;
+
+      toggleError(false);
+      toggleDashboard(false);
+      toggleLoading(true);
+
+      try {
+        const raw = await fetchData(flowUrl, topCount);
+        const normalized = normalizeData(raw);
+        lastData = normalized;
+
+        // Update stats
+        $("totalGuests").textContent = normalized.summary.total || 0;
+        $("checkedInGuests").textContent = normalized.summary.checkedIn || 0;
+        $("notCheckedGuests").textContent = normalized.summary.notChecked || 0;
+
+        // Prepare rows for table
+        filteredRows = [...normalized.checkedIn];
+        applySearch();
+        renderTable();
+
+        // UI toggles
+        $("loading").style.display = "none";
+        toggleDashboard(true);
+        $("loadBtn").style.display = "none";
+        $("refreshBtn").style.display = "inline-block";
+        $("exportBtn").style.display = filteredRows.length ? "inline-block" : "none";
+        $("lastUpdated").textContent = `Last updated: ${formatDT(new Date())}`;
+
+        // Reset countdown on successful fetch
+        resetCountdown();
+      } catch (err) {
+        $("loading").style.display = "none";
+        showError(`Failed to load dashboard: ${err.message}`);
+      }
+    }
+
+    function toggleLoading(on){ $("loading").style.display = on ? "block" : "none"; }
+    function toggleDashboard(on){ $("dashboard").style.display = on ? "block" : "none"; }
+    function toggleError(on){ $("error").style.display = on ? "block" : "none"; }
+    function showError(msg){ const e=$("error"); e.textContent = msg; toggleError(true); }
+
+    // ---------- Search & Sort ----------
+    function applySearch() {
+      const q = $("searchBox").value.trim().toLowerCase();
+      const rows = lastData.checkedIn || [];
+      if (!q) { filteredRows = [...rows]; return; }
+      filteredRows = rows.filter(r =>
+        r.Name.toLowerCase().includes(q) ||
+        r.Email.toLowerCase().includes(q) ||
+        r.QR_GUID.toLowerCase().includes(q)
+      );
+    }
+
+    function setSort(key) {
+      // Map header text to field
+      const keyMap = {
+        "#": "#",
+        "Name": "Name",
+        "Email": "Email",
+        "QR Code": "QR_GUID",
+        "Check-In Time": "CheckInTimestamp"
+      };
+      const field = keyMap[key] || "CheckInTimestamp";
+      if (sortState.key === field) {
+        sortState.dir = (sortState.dir === "asc" ? "desc" : "asc");
+      } else {
+        sortState.key = field;
+        sortState.dir = (field === "CheckInTimestamp" ? "desc" : "asc");
+      }
+      renderTable();
+    }
+
+    function renderTable() {
+      const el = $("guestTableContainer");
+      if (!filteredRows.length) {
+        el.innerHTML = `
+          <div class="empty-state">
+            <div class="icon">📋</div>
+            <h3>No checked-in guests yet</h3>
+            <p>Guests will appear here once they check in.</p>
+          </div>
+        `;
+        $("guestCount").textContent = "0";
+        $("exportBtn").style.display = "none";
+        return;
+      }
+
+      // Sort
+      const headers = ["#","Name","Email","QR Code","Check-In Time"];
+      const sorter = sorters[headers.find(h=> (h==="QR Code" ? "QR_GUID" : h.replace(" ","-")) )] || sorters["Check-In Time"];
+
+      filteredRows.sort((a,b) => {
+        let cmp = 0;
+        switch (sortState.key) {
+          case "Name": cmp = a.Name.localeCompare(b.Name); break;
+          case "Email": cmp = a.Email.localeCompare(b.Email); break;
+          case "QR_GUID": cmp = a.QR_GUID.localeCompare(b.QR_GUID); break;
+          case "CheckInTimestamp":
+            cmp = (a.CheckInTimestamp?.getTime()||0) - (b.CheckInTimestamp?.getTime()||0);
+            break;
+          default: cmp = 0;
         }
+        return sortState.dir === "asc" ? cmp : -cmp;
+      });
 
-        function showError(message) {
-            const errorDiv = document.getElementById('error');
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
+      const arrow = sortState.dir === "asc" ? "▲" : "▼";
+      const th = (name, mapKey) =>
+        `<th data-key="${name}" aria-sort="${sortState.key===mapKey ? sortState.dir : 'none'}">${name}${(sortState.key===mapKey)?` ${arrow}`:""}</th>`;
+
+      let html = `
+        <table class="guest-table">
+          <thead>
+            <tr>
+              ${th("#","#")}
+              ${th("Name","Name")}
+              ${th("Email","Email")}
+              ${th("QR Code","QR_GUID")}
+              ${th("Check-In Time","CheckInTimestamp")}
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      filteredRows.forEach((g, i) => {
+        html += `
+          <tr>
+            <td>${i+1}</td>
+            <td><strong>${escapeHTML(g.Name)}</strong></td>
+            <td>${escapeHTML(g.Email)}</td>
+            <td><span class="qr-code" title="QR / GUID">${escapeHTML(g.QR_GUID)}</span></td>
+            <td><span class="timestamp">${formatDT(g.CheckInTimestamp)}</span></td>
+          </tr>
+        `;
+      });
+
+      html += `</tbody></table>`;
+      el.innerHTML = html;
+
+      // header click sorting
+      el.querySelectorAll("th").forEach(thEl => {
+        thEl.addEventListener("click", () => setSort(thEl.getAttribute("data-key")));
+      });
+
+      $("guestCount").textContent = String(filteredRows.length);
+      $("exportBtn").style.display = "inline-block";
+    }
+
+    function escapeHTML(s) {
+      return String(s ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    // ---------- CSV Export ----------
+    function exportCSV() {
+      if (!filteredRows.length) return;
+      const rows = filteredRows.map(r => ({
+        Name: r.Name,
+        Email: r.Email,
+        QR_GUID: r.QR_GUID,
+        CheckInTimestamp: r.CheckInTimestamp ? r.CheckInTimestamp.toISOString() : ""
+      }));
+      const header = Object.keys(rows[0]);
+      const csv = [
+        header.join(","),
+        ...rows.map(r => header.map(k => csvCell(r[k])).join(","))
+      ].join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `checked-in-${new Date().toISOString().slice(0,19).replace(/[:T]/g,"-")}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+    function csvCell(v) {
+      const s = String(v ?? "");
+      if (/[",\n]/.test(s)) return `"${s.replace(/"/g,'""')}"`;
+      return s;
+    }
+
+    // ---------- Auto refresh timer ----------
+    function startTimer() {
+      stopTimer();
+      countdown = 30;
+      $("timerPill").textContent = `Next refresh in ${countdown}s`;
+      tickHandle = setInterval(async () => {
+        if (!$("autoToggle").checked) return;
+        if (countdown > 1) {
+          countdown--;
+          $("timerPill").textContent = `Next refresh in ${countdown}s`;
+        } else {
+          $("timerPill").textContent = `Refreshing…`;
+          await loadDashboard(true);
         }
-
-        // Auto-refresh every 30 seconds if dashboard is visible
-        setInterval(() => {
-            const dashboardDiv = document.getElementById('dashboard');
-            if (dashboardDiv.style.display !== 'none' && flowUrl) {
-                loadDashboard();
-            }
-        }, 30000);
-    </script>
+      }, 1000);
+    }
+    function stopTimer() {
+      if (tickHandle) clearInterval(tickHandle);
+      tickHandle = null;
+      $("timerPill").textContent = `Auto-refresh paused`;
+    }
+    function resetCountdown() {
+      if (!$("autoToggle").checked) return;
+      countdown = 30;
+      $("timerPill").textContent = `Next refresh in ${countdown}s`;
+    }
+  </script>
 </body>
 </html>
