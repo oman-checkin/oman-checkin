@@ -1,74 +1,524 @@
-<!doctype html>
-<meta charset="utf-8">
-<title>Flow Test · GetCheckInDashboard</title>
-<style>
-  body{font:16px system-ui, -apple-system, Segoe UI, Roboto, Arial; margin:24px; color:#222}
-  label{display:block; margin:.5rem 0 .25rem; font-weight:600}
-  input,textarea,button{font:inherit}
-  input, textarea{width:100%; box-sizing:border-box; padding:.6rem .7rem; border:1px solid #ccc; border-radius:10px}
-  textarea{height:220px; white-space:pre-wrap}
-  .row{display:grid; gap:.75rem; grid-template-columns:1fr auto}
-  button{padding:.7rem 1.1rem; border:0; border-radius:10px; background:#006400; color:#fff; cursor:pointer}
-  button:disabled{opacity:.6; cursor:not-allowed}
-  .muted{color:#666; font-size:.9rem}
-  .ok{color:#1b7f1b}
-  .err{color:#b00020}
-</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Check-In Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-<h1>Test: Power Automate HTTP Flow</h1>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
 
-<label>Flow URL (paste full URL including <code>&sig=</code>)</label>
-<input id="url" placeholder="...........">
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
 
-<div class="row" style="margin-top:.75rem">
-  <div>
-    <label>JSON Body</label>
-    <textarea id="body">{ "top": 5 }</textarea>
-    <div class="muted">Tip: leave as <code>{"top":5}</code> or use <code>{}</code> if you didn’t add the <em>top</em> parameter.</div>
-  </div>
-  <div style="align-self:end">
-    <button id="send">Send POST</button>
-  </div>
-</div>
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
 
-<label style="margin-top:1rem">Status</label>
-<div id="status" class="muted">Waiting…</div>
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
 
-<label style="margin-top:.5rem">Response</label>
-<textarea id="out" placeholder="Response will appear here"></textarea>
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
 
-<script>
-const $ = s => document.querySelector(s);
-const url = $("#url"), body = $("#body"), out = $("#out"), status = $("#status"), send = $("#send");
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
 
-async function post() {
-  const u = url.value.trim();
-  if (!u) { alert("Paste the full flow URL (must include &sig=)."); return; }
-  let payload = {};
-  try { payload = body.value.trim() ? JSON.parse(body.value) : {}; }
-  catch { alert("Body is not valid JSON."); return; }
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 15px;
+            align-items: end;
+        }
 
-  send.disabled = true; status.textContent = "Sending…"; out.value = "";
-  try {
-    const res = await fetch(u, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-    const text = await res.text();
-    status.innerHTML = (res.ok ? `<b class="ok">${res.status} ${res.statusText}</b>` :
-                                 `<b class="err">${res.status} ${res.statusText}</b>`);
-    out.value = text;
-  } catch (e) {
-    status.innerHTML = `<b class="err">Network error</b>`;
-    out.value = e?.message || String(e);
-  } finally {
-    send.disabled = false;
-  }
-}
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
 
-send.addEventListener("click", post);
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 0.9rem;
+        }
 
-// Optional: prefill URL if you want to hardcode it here once
-// url.value = "PASTE_YOUR_FULL_FLOW_URL_WITH_sig_HERE";
-</script>
+        .form-group input {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card .icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .stat-card .number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .label {
+            font-size: 1.1rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-card.total .icon { color: #667eea; }
+        .stat-card.checked-in .icon { color: #10b981; }
+        .stat-card.not-checked .icon { color: #ef4444; }
+
+        .stat-card.total .number { color: #667eea; }
+        .stat-card.checked-in .number { color: #10b981; }
+        .stat-card.not-checked .number { color: #ef4444; }
+
+        .guest-list {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .guest-list h2 {
+            margin-bottom: 20px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .guest-list h2 .badge {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .guest-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .guest-table thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .guest-table th,
+        .guest-table td {
+            padding: 15px;
+            text-align: left;
+        }
+
+        .guest-table th {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        .guest-table tbody tr {
+            border-bottom: 1px solid #e0e0e0;
+            transition: background-color 0.2s;
+        }
+
+        .guest-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .guest-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .qr-code {
+            font-family: monospace;
+            background: #f0f0f0;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+        }
+
+        .timestamp {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .loading .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fee;
+            border: 2px solid #fcc;
+            color: #c33;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state .icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .last-updated {
+            text-align: center;
+            color: white;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .guest-table {
+                font-size: 0.85rem;
+            }
+
+            .guest-table th,
+            .guest-table td {
+                padding: 10px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎉 Event Check-In Dashboard</h1>
+            <p>Real-time monitoring of guest arrivals</p>
+        </div>
+
+        <div class="controls">
+            <div class="controls-grid">
+                <div class="form-group">
+                    <label for="flowUrl">Power Automate Flow URL</label>
+                    <input 
+                        type="text" 
+                        id="flowUrl" 
+                        placeholder="https://prod-xx.westus.logic.azure.com:443/workflows/..."
+                        value="https://defaulta4f4a348105d4206a9482fbe287c3d.e7.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/9613844c0e184cc0bd7e42d51980b155/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=9STzl35vaLyLWAg8yVXpKnuz2jrrW0qaq94bnnGe7qA">
+                </div>
+                <div class="form-group">
+                    <label for="topCount">Top Results</label>
+                    <input 
+                        type="number" 
+                        id="topCount" 
+                        value="50" 
+                        min="1" 
+                        max="1000">
+                </div>
+                <button class="btn btn-primary" id="loadBtn" onclick="loadDashboard()">
+                    Load Dashboard
+                </button>
+                <button class="btn btn-secondary" id="refreshBtn" onclick="loadDashboard()" style="display:none;">
+                    Refresh
+                </button>
+            </div>
+        </div>
+
+        <div id="error" class="error" style="display:none;"></div>
+
+        <div id="loading" class="loading" style="display:none;">
+            <div class="spinner"></div>
+            <p>Loading dashboard data...</p>
+        </div>
+
+        <div id="dashboard" style="display:none;">
+            <div class="stats-grid">
+                <div class="stat-card total">
+                    <div class="icon">👥</div>
+                    <div class="number" id="totalGuests">0</div>
+                    <div class="label">Total Guests</div>
+                </div>
+                <div class="stat-card checked-in">
+                    <div class="icon">✅</div>
+                    <div class="number" id="checkedInGuests">0</div>
+                    <div class="label">Checked In</div>
+                </div>
+                <div class="stat-card not-checked">
+                    <div class="icon">⏳</div>
+                    <div class="number" id="notCheckedGuests">0</div>
+                    <div class="label">Not Checked In</div>
+                </div>
+            </div>
+
+            <div class="guest-list">
+                <h2>
+                    Checked-In Guests 
+                    <span class="badge" id="guestCount">0</span>
+                </h2>
+                <div id="guestTableContainer"></div>
+            </div>
+
+            <div class="last-updated" id="lastUpdated"></div>
+        </div>
+    </div>
+
+    <script>
+        let flowUrl = '';
+
+        async function loadDashboard() {
+            const urlInput = document.getElementById('flowUrl');
+            const topCount = document.getElementById('topCount').value;
+            const errorDiv = document.getElementById('error');
+            const loadingDiv = document.getElementById('loading');
+            const dashboardDiv = document.getElementById('dashboard');
+
+            // Get URL from input
+            flowUrl = urlInput.value.trim();
+
+            if (!flowUrl) {
+                showError('Please enter your Power Automate Flow URL');
+                return;
+            }
+
+            // Hide error and dashboard
+            errorDiv.style.display = 'none';
+            dashboardDiv.style.display = 'none';
+            loadingDiv.style.display = 'block';
+
+            try {
+                const response = await fetch(flowUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ top: parseInt(topCount) })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // Update dashboard
+                updateDashboard(data);
+                
+                // Show dashboard and hide loading
+                loadingDiv.style.display = 'none';
+                dashboardDiv.style.display = 'block';
+
+                // Show refresh button
+                document.getElementById('loadBtn').style.display = 'none';
+                document.getElementById('refreshBtn').style.display = 'block';
+
+                // Update last updated time
+                document.getElementById('lastUpdated').textContent = 
+                    `Last updated: ${new Date().toLocaleString()}`;
+
+            } catch (error) {
+                loadingDiv.style.display = 'none';
+                showError(`Failed to load dashboard: ${error.message}`);
+            }
+        }
+
+        function updateDashboard(data) {
+            // Update summary stats
+            document.getElementById('totalGuests').textContent = data.summary.total || 0;
+            document.getElementById('checkedInGuests').textContent = data.summary.checkedIn || 0;
+            document.getElementById('notCheckedGuests').textContent = data.summary.notChecked || 0;
+
+            // Update guest count badge
+            const guestCount = data.checkedIn ? data.checkedIn.length : 0;
+            document.getElementById('guestCount').textContent = guestCount;
+
+            // Update guest table
+            const tableContainer = document.getElementById('guestTableContainer');
+            
+            if (!data.checkedIn || data.checkedIn.length === 0) {
+                tableContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📋</div>
+                        <h3>No checked-in guests yet</h3>
+                        <p>Guests will appear here once they check in</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Create table
+            let tableHTML = `
+                <table class="guest-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>QR Code</th>
+                            <th>Check-In Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            data.checkedIn.forEach((guest, index) => {
+                const timestamp = guest.CheckInTimestamp 
+                    ? new Date(guest.CheckInTimestamp).toLocaleString() 
+                    : 'N/A';
+                
+                tableHTML += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td><strong>${guest.Name || 'N/A'}</strong></td>
+                        <td>${guest.Email || 'N/A'}</td>
+                        <td><span class="qr-code">${guest.QR_GUID || 'N/A'}</span></td>
+                        <td><span class="timestamp">${timestamp}</span></td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+
+            tableContainer.innerHTML = tableHTML;
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        // Auto-refresh every 30 seconds if dashboard is visible
+        setInterval(() => {
+            const dashboardDiv = document.getElementById('dashboard');
+            if (dashboardDiv.style.display !== 'none' && flowUrl) {
+                loadDashboard();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>
