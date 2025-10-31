@@ -19,17 +19,16 @@
     .header p{opacity:.9}
     .controls,.guest-list,.stat-card{background:var(--card);border-radius:15px;box-shadow:var(--shadow)}
     .controls{padding:16px 20px;margin-bottom:20px}
-    .controls-grid{display:grid;grid-template-columns:1.5fr .8fr auto auto auto;gap:12px;align-items:end}
+    .controls-grid{display:grid;grid-template-columns:.8fr .4fr auto auto;gap:12px;align-items:end}
     .form-group{display:flex;flex-direction:column}
     label{font-weight:600;margin-bottom:6px;color:var(--ink);font-size:.9rem}
-    input[type="text"],input[type="number"]{padding:12px;border:2px solid var(--ring);border-radius:8px;font-size:1rem}
+    input[type="number"]{padding:12px;border:2px solid var(--ring);border-radius:8px;font-size:1rem}
     input:focus{outline:none;border-color:var(--p1)}
     .btn{padding:12px 16px;border:none;border-radius:8px;font-size:.95rem;font-weight:700;cursor:pointer;transition:transform .2s,box-shadow .2s;text-transform:uppercase;letter-spacing:.5px}
     .btn-primary{background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff}
     .btn-primary:hover{transform:translateY(-2px);box-shadow:0 5px 15px rgba(102,126,234,.4)}
     .btn-secondary{background:#6c757d;color:#fff}
     .btn-secondary:hover{transform:translateY(-2px);background:#5a6268}
-    .btn-ghost{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.7)}
     .btn:disabled{opacity:.6;cursor:not-allowed;transform:none!important}
     .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-bottom:20px}
     .stat-card{padding:24px;text-align:center;transition:transform .2s}
@@ -44,7 +43,7 @@
     .guest-list h2{margin-bottom:12px;color:var(--ink);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
     .badge{background:var(--p1);color:#fff;padding:4px 12px;border-radius:999px;font-size:.85rem}
     .table-actions{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 16px}
-    .search{flex:1;min-width:220px}
+    .search{flex:1;min-width:220px;padding:12px;border:2px solid var(--ring);border-radius:8px;font-size:1rem}
     .guest-table{width:100%;border-collapse:collapse}
     .guest-table thead{background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff}
     th,td{padding:12px 10px;text-align:left}
@@ -61,7 +60,6 @@
     .empty-state .icon{font-size:3.2rem;margin-bottom:12px;opacity:.5}
     .last-updated{text-align:center;color:#fff;margin-top:16px;font-size:.9rem;opacity:.85}
     .pill{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.35)}
-    .row-actions a{font-size:.85rem}
     @media(max-width:900px){.controls-grid{grid-template-columns:1fr 1fr;grid-auto-rows:auto}}
     @media(max-width:680px){.controls-grid{grid-template-columns:1fr}}
   </style>
@@ -74,14 +72,12 @@
     </div>
 
     <div class="controls" aria-label="Controls">
-      <div class="controls-grid">
-        <div class="form-group">
-          <label for="flowUrl">Power Automate Flow URL</label>
-          <input type="text" id="flowUrl"
-  value="https://defaulta4f4a348105d4206a9482fbe287c3d.e7.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/9613844c0e184cc0bd7e42d51980b155/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=9STzl35vaLyLWAg8yVXpKnuz2jrrW0qaq94bnnGe7qA"
-  hidden />
+      <!-- Hidden flow URL prefilled (built-in) -->
+      <input type="text" id="flowUrl"
+             value="https://defaulta4f4a348105d4206a9482fbe287c3d.e7.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/9613844c0e184cc0bd7e42d51980b155/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=9STzl35vaLyLWAg8yVXpKnuz2jrrW0qaq94bnnGe7qA"
+             hidden />
 
-        </div>
+      <div class="controls-grid">
         <div class="form-group">
           <label for="topCount">Top Results</label>
           <input type="number" id="topCount" value="50" min="1" max="2000" />
@@ -99,8 +95,6 @@
           </label>
         </span>
         <span class="pill" id="timerPill" aria-live="polite">Next refresh in 30s</span>
-        <button class="btn btn-ghost" id="saveUrlBtn" title="Save URL locally (browser only)">Save URL</button>
-        <button class="btn btn-ghost" id="clearUrlBtn" title="Clear saved URL">Clear URL</button>
       </div>
     </div>
 
@@ -147,9 +141,6 @@
   <script>
     // ---------- Utilities ----------
     const $ = (id) => document.getElementById(id);
-    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
-
-    // Prefer user's timezone
     const formatDT = (v) => {
       if (!v) return "N/A";
       try {
@@ -158,15 +149,12 @@
         return d.toLocaleString();
       } catch { return "N/A"; }
     };
-
-    // Safe field extraction across inconsistent payloads
     const getField = (obj, variants = []) => {
       for (const key of variants) {
         if (obj && Object.prototype.hasOwnProperty.call(obj, key) && obj[key] != null && obj[key] !== "") {
           return obj[key];
         }
       }
-      // Try loose match on case/spacing
       const lowerKeys = Object.keys(obj || {}).reduce((map, k) => (map[k.toLowerCase()] = k, map), {});
       for (const v of variants) {
         const lk = v.toLowerCase();
@@ -174,15 +162,12 @@
       }
       return undefined;
     };
-
-    // Count extraction for SharePoint/PowerAutomate oddities
     const getCount = (root) => {
       if (!root) return 0;
       const direct = getField(root, ["total", "Total", "count", "@odata.count"]);
       if (direct !== undefined) return Number(direct) || 0;
       const dCount = getField(root, ["d"]);
       if (dCount && (dCount.__count || dCount["@odata.count"])) return Number(dCount.__count || dCount["@odata.count"]) || 0;
-      // Try arrays we often see
       const arrays = [
         getField(root, ["checkedIn", "Select_CheckedIn_Rows"]),
         getField(root, ["all", "value", "rows", "items"])
@@ -190,32 +175,24 @@
       if (arrays.length && Array.isArray(arrays[0])) return arrays[0].length;
       return 0;
     };
-
-    // Normalize any incoming shape into { summary, checkedIn }
     const normalizeData = (data) => {
-      if (!data || typeof data !== "object") return { summary: { total: 0, checkedIn: 0, notChecked: 0 }, checkedIn: [] };
+      if (!data || typeof data !== "object")
+        return { summary: { total: 0, checkedIn: 0, notChecked: 0 }, checkedIn: [] };
 
-      // 1) Summary candidates
-      const summaryBlock =
-        getField(data, ["summary", "Summary", "Compose_Summary"]) || {};
-
+      const summaryBlock = getField(data, ["summary", "Summary", "Compose_Summary"]) || {};
       let total = Number(getField(summaryBlock, ["total", "Total"])) || getCount(data) || 0;
       let checkedInTotal = Number(getField(summaryBlock, ["checkedIn", "CheckedIn", "checked_in"])) || 0;
       let notChecked = Number(getField(summaryBlock, ["notChecked", "NotChecked", "not_checked"])) || 0;
 
-      // If not provided, derive from arrays
       const checkedInArray =
         getField(data, ["checkedIn", "CheckedIn"]) ||
-        getField(data, ["Select_CheckedIn_Rows"]) ||
-        []; // may be filled later
+        getField(data, ["Select_CheckedIn_Rows"]) || [];
 
-      // Maybe SharePoint "value" with a Status/Timestamp meaning checked-in
       let rawArray = checkedInArray;
       if (!Array.isArray(rawArray)) {
         rawArray = getField(data, ["value", "items", "rows"]) || [];
       }
 
-      // Try to detect which entries are "checked-in"
       let normalizedCheckedIn = [];
       if (Array.isArray(checkedInArray) && checkedInArray.length) {
         normalizedCheckedIn = checkedInArray;
@@ -230,7 +207,6 @@
       if (!checkedInTotal) checkedInTotal = normalizedCheckedIn.length;
       if (!notChecked && total >= checkedInTotal) notChecked = total - checkedInTotal;
 
-      // Normalize guest fields to a clean shape for the table
       const mapGuest = (g) => {
         const name = getField(g, ["Name","FullName","GuestName","FirstName"]) || "N/A";
         const email = getField(g, ["Email","EmailAddress","Mail"]) || "N/A";
@@ -246,8 +222,6 @@
       };
 
       const cleaned = (normalizedCheckedIn || []).map(mapGuest);
-
-      // If total is still zero but we have guests, set it
       if (!total && cleaned.length) total = cleaned.length;
 
       return {
@@ -266,16 +240,15 @@
       "Check-In Time": (a,b) => (a.CheckInTimestamp?.getTime()||0) - (b.CheckInTimestamp?.getTime()||0),
     };
 
-    // ---------- State ----------
+    // State
     let flowUrl = "";
     let lastData = { summary: { total:0, checkedIn:0, notChecked:0 }, checkedIn: [] };
     let filteredRows = [];
     let countdown = 30;
     let tickHandle = null;
 
-    // ---------- Networking ----------
+    // Networking
     async function fetchData(url, top) {
-      // Basic POST to Power Automate manual trigger with JSON body { top: n }
       const resp = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Accept":"application/json" },
@@ -286,49 +259,30 @@
         const txt = await resp.text().catch(()=> "");
         throw new Error(`HTTP ${resp.status} ${resp.statusText}${txt ? ` – ${txt.slice(0,140)}` : ""}`);
       }
-      // Some Flow steps may return text; try to parse anyway
       const text = await resp.text();
       try { return JSON.parse(text); } catch { return { value: [], raw: text }; }
     }
 
-    // ---------- UI wiring ----------
+    // UI wiring
     $("loadBtn").addEventListener("click", () => loadDashboard());
     $("refreshBtn").addEventListener("click", () => loadDashboard(true));
     $("exportBtn").addEventListener("click", () => exportCSV());
-    $("saveUrlBtn").addEventListener("click", () => {
-      const u = $("flowUrl").value.trim();
-      if (!u) return alert("Paste your Flow URL first.");
-      localStorage.setItem("checkin.flowUrl", u);
-      alert("Saved locally to this browser.");
-    });
-    $("clearUrlBtn").addEventListener("click", () => {
-      localStorage.removeItem("checkin.flowUrl");
-      $("flowUrl").value = "";
-      alert("Cleared saved URL from this browser.");
-    });
+    $("autoToggle").addEventListener("change", (e) => { if (e.target.checked) startTimer(); else stopTimer(); });
+    $("searchBox").addEventListener("input", () => { applySearch(); renderTable(); });
 
-    $("autoToggle").addEventListener("change", (e) => {
-      if (e.target.checked) startTimer(); else stopTimer();
-    });
-
-    $("searchBox").addEventListener("input", () => {
-      applySearch();
-      renderTable();
-    });
-
-    // Load saved URL if present
+    // Initialize (use the hidden, built-in URL)
     (function init() {
-      const saved = localStorage.getItem("checkin.flowUrl");
-      if (saved) $("flowUrl").value = saved;
+      flowUrl = $("flowUrl").value.trim();
       startTimer();
     })();
 
     async function loadDashboard(isRefresh=false) {
-      const urlInput = $("flowUrl").value.trim();
       const topCount = $("topCount").value;
 
-      if (!urlInput) return showError("Please enter your Power Automate Flow URL.");
-      flowUrl = urlInput;
+      if (!flowUrl) {
+        showError("Power Automate Flow URL is missing in the code.");
+        return;
+      }
 
       toggleError(false);
       toggleDashboard(false);
@@ -339,17 +293,14 @@
         const normalized = normalizeData(raw);
         lastData = normalized;
 
-        // Update stats
         $("totalGuests").textContent = normalized.summary.total || 0;
         $("checkedInGuests").textContent = normalized.summary.checkedIn || 0;
         $("notCheckedGuests").textContent = normalized.summary.notChecked || 0;
 
-        // Prepare rows for table
         filteredRows = [...normalized.checkedIn];
         applySearch();
         renderTable();
 
-        // UI toggles
         $("loading").style.display = "none";
         toggleDashboard(true);
         $("loadBtn").style.display = "none";
@@ -357,7 +308,6 @@
         $("exportBtn").style.display = filteredRows.length ? "inline-block" : "none";
         $("lastUpdated").textContent = `Last updated: ${formatDT(new Date())}`;
 
-        // Reset countdown on successful fetch
         resetCountdown();
       } catch (err) {
         $("loading").style.display = "none";
@@ -370,9 +320,9 @@
     function toggleError(on){ $("error").style.display = on ? "block" : "none"; }
     function showError(msg){ const e=$("error"); e.textContent = msg; toggleError(true); }
 
-    // ---------- Search & Sort ----------
+    // Search & Sort
     function applySearch() {
-      const q = $("searchBox").value.trim().toLowerCase();
+      const q = ($("searchBox").value || "").trim().toLowerCase();
       const rows = lastData.checkedIn || [];
       if (!q) { filteredRows = [...rows]; return; }
       filteredRows = rows.filter(r =>
@@ -383,14 +333,7 @@
     }
 
     function setSort(key) {
-      // Map header text to field
-      const keyMap = {
-        "#": "#",
-        "Name": "Name",
-        "Email": "Email",
-        "QR Code": "QR_GUID",
-        "Check-In Time": "CheckInTimestamp"
-      };
+      const keyMap = { "#":"#", "Name":"Name", "Email":"Email", "QR Code":"QR_GUID", "Check-In Time":"CheckInTimestamp" };
       const field = keyMap[key] || "CheckInTimestamp";
       if (sortState.key === field) {
         sortState.dir = (sortState.dir === "asc" ? "desc" : "asc");
@@ -415,10 +358,6 @@
         $("exportBtn").style.display = "none";
         return;
       }
-
-      // Sort
-      const headers = ["#","Name","Email","QR Code","Check-In Time"];
-      const sorter = sorters[headers.find(h=> (h==="QR Code" ? "QR_GUID" : h.replace(" ","-")) )] || sorters["Check-In Time"];
 
       filteredRows.sort((a,b) => {
         let cmp = 0;
@@ -467,7 +406,6 @@
       html += `</tbody></table>`;
       el.innerHTML = html;
 
-      // header click sorting
       el.querySelectorAll("th").forEach(thEl => {
         thEl.addEventListener("click", () => setSort(thEl.getAttribute("data-key")));
       });
@@ -480,7 +418,7 @@
       return String(s ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     }
 
-    // ---------- CSV Export ----------
+    // CSV Export
     function exportCSV() {
       if (!filteredRows.length) return;
       const rows = filteredRows.map(r => ({
@@ -510,19 +448,21 @@
       return s;
     }
 
-    // ---------- Auto refresh timer ----------
+    // Auto refresh timer
     function startTimer() {
       stopTimer();
-      countdown = 30;
+      let countdown = 30;
       $("timerPill").textContent = `Next refresh in ${countdown}s`;
       tickHandle = setInterval(async () => {
         if (!$("autoToggle").checked) return;
-        if (countdown > 1) {
-          countdown--;
+        countdown--;
+        if (countdown > 0) {
           $("timerPill").textContent = `Next refresh in ${countdown}s`;
         } else {
           $("timerPill").textContent = `Refreshing…`;
           await loadDashboard(true);
+          countdown = 30;
+          $("timerPill").textContent = `Next refresh in ${countdown}s`;
         }
       }, 1000);
     }
@@ -533,8 +473,7 @@
     }
     function resetCountdown() {
       if (!$("autoToggle").checked) return;
-      countdown = 30;
-      $("timerPill").textContent = `Next refresh in ${countdown}s`;
+      // handled inside startTimer tick
     }
   </script>
 </body>
