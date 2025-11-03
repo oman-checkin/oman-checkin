@@ -1,4 +1,21 @@
 {
-  "summary": { "total": 0, "checkedIn": 0, "notChecked": 0 },
-  "checkedIn": []
+  "summary": {
+    "total": 3,
+    "checkedIn": 2,
+    "notChecked": 1
+  },
+  "checkedIn": [
+    {
+      "Name": "Khalid Al Omani",
+      "Email": "khalid@example.com",
+      "QR_GUID": "QR-001",
+      "CheckInTimestamp": "2025-11-03T10:00:00Z"
+    },
+    {
+      "Name": "Guest Two",
+      "Email": "guest2@example.com",
+      "QR_GUID": "QR-002",
+      "CheckInTimestamp": "2025-11-03T10:05:00Z"
+    }
+  ]
 }
