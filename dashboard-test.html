@@ -126,8 +126,9 @@
   </div>
 
   <script>
-    // 👇 This is the file your Power Automate flow writes to
-    const GITHUB_JSON_URL = "https://raw.githubusercontent.com/oman-checkin/oman-checkin/main/data/checkin.json";
+    // 👇 change this if your repo/user/branch is different
+    // this reads from the ROOT of your repo, not from /data/
+    const GITHUB_JSON_URL = "https://raw.githubusercontent.com/oman-checkin/oman-checkin/main/checkin.json";
 
     const $ = (id) => document.getElementById(id);
     const formatDT = (v) => {
@@ -138,21 +139,7 @@
         return d.toLocaleString();
       } catch { return "N/A"; }
     };
-    const getField = (obj, variants = []) => {
-      for (const key of variants) {
-        if (obj && Object.prototype.hasOwnProperty.call(obj, key) && obj[key] != null && obj[key] !== "") {
-          return obj[key];
-        }
-      }
-      const lowerKeys = Object.keys(obj || {}).reduce((map, k) => (map[k.toLowerCase()] = k, map), {});
-      for (const v of variants) {
-        const lk = v.toLowerCase();
-        if (lowerKeys[lk] && obj[lowerKeys[lk]] != null && obj[lowerKeys[lk]] !== "") return obj[lowerKeys[lk]];
-      }
-      return undefined;
-    };
 
-    // Sorting state
     let sortState = { key: "CheckInTimestamp", dir: "desc" };
     let lastData = { summary: { total:0, checkedIn:0, notChecked:0 }, checkedIn: [] };
     let filteredRows = [];
@@ -164,7 +151,6 @@
     $("autoToggle").addEventListener("change", (e) => { if (e.target.checked) startTimer(); else stopTimer(); });
     $("searchBox").addEventListener("input", () => { applySearch(); renderTable(); });
 
-    // start auto timer on page load
     (function init() {
       startTimer();
     })();
@@ -175,13 +161,9 @@
       toggleLoading(true);
 
       try {
-        // cache-buster so GitHub always gives latest
         const resp = await fetch(GITHUB_JSON_URL + "?_=" + Date.now());
-        if (!resp.ok) {
-          throw new Error("GitHub returned " + resp.status);
-        }
+        if (!resp.ok) throw new Error("GitHub returned " + resp.status);
         const raw = await resp.json();
-
         const normalized = normalizeData(raw);
         lastData = normalized;
 
@@ -213,7 +195,6 @@
       let total = Number(summaryBlock.total) || 0;
       let checkedInTotal = Number(summaryBlock.checkedIn) || 0;
       let notChecked = Number(summaryBlock.notChecked) || 0;
-
       const checkedInArray = Array.isArray(data.checkedIn) ? data.checkedIn : [];
 
       if (!checkedInTotal) checkedInTotal = checkedInArray.length;
@@ -333,7 +314,7 @@
     }
 
     function escapeHTML(s) {
-      return String(s ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      return String(s ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39'}[c]));
     }
 
     function exportCSV() {
