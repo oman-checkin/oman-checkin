@@ -76,13 +76,15 @@
   </table>
 
   <script>
-    const DATA_URL = "https://raw.githubusercontent.com/oman-checkin/oman-checkin/main/checkin.json?_=" + Date.now();
+    const API_URL = "https://api.github.com/repos/oman-checkin/oman-checkin/contents/checkin.json";
 
     async function load() {
       try {
-        const res = await fetch(DATA_URL + "&t=" + Date.now());
+        const res = await fetch(API_URL + "?t=" + Date.now());
         if (!res.ok) throw new Error("Fetch failed");
-        const data = await res.json();
+        const file = await res.json();
+        const decoded = atob(file.content);
+        const data = JSON.parse(decoded);
 
         document.getElementById("total").textContent = data.total ?? 0;
         document.getElementById("checked").textContent = data.checked_in ?? 0;
@@ -113,17 +115,13 @@
             tbody.appendChild(row);
           });
         }
-
       } catch (err) {
         document.getElementById("guestTable").innerHTML = "<tr><td colspan='5'>Error loading data</td></tr>";
       }
     }
 
     document.getElementById("search").addEventListener("input", load);
-
-    // refresh every 1 seconds
-    setInterval(load, 3000);
-
+    setInterval(load, 5000);
     load();
   </script>
 </body>
