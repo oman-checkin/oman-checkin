@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -81,16 +80,14 @@
 
     async function load() {
       try {
-        const res = await fetch(DATA_URL);
+        const res = await fetch(DATA_URL + "&t=" + Date.now());
         if (!res.ok) throw new Error("Fetch failed");
         const data = await res.json();
 
-        // your JSON: {"checked_in":1,"not_checked_in":297,"total":298}
         document.getElementById("total").textContent = data.total ?? 0;
         document.getElementById("checked").textContent = data.checked_in ?? 0;
         document.getElementById("notChecked").textContent = data.not_checked_in ?? 0;
 
-        // if later you add detailed list e.g. data.guests = [...], this will render it
         const guests = Array.isArray(data.guests) ? data.guests : [];
         const search = document.getElementById("search").value.toLowerCase();
         const tbody = document.getElementById("guestTable");
@@ -123,9 +120,11 @@
     }
 
     document.getElementById("search").addEventListener("input", load);
-    setInterval(load, 30000);
+
+    // refresh every 5 seconds
+    setInterval(load, 5000);
+
     load();
   </script>
 </body>
 </html>
-
