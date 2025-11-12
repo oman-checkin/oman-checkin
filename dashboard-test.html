@@ -24,9 +24,7 @@
       justify-content:center;
       padding:clamp(14px,3vw,30px);
     }
-    .wrap{
-      width:min(100%, 960px);
-    }
+    .wrap{width:min(100%, 960px);}
     header{
       background:var(--card);
       border-radius:var(--radius);
@@ -39,21 +37,9 @@
       align-items:center;
       gap:14px;
     }
-    header img{
-      height:40px;
-      border-radius:6px;
-      object-fit:cover;
-    }
-    header h1{
-      margin:0;
-      font-size:clamp(18px,3.2vw,24px);
-      color:var(--brand);
-    }
-    header p{
-      margin:2px 0 0;
-      color:var(--muted);
-      font-weight:500;
-    }
+    header img{height:40px;border-radius:6px;object-fit:cover}
+    header h1{margin:0;font-size:clamp(18px,3.2vw,24px);color:var(--brand)}
+    header p{margin:2px 0 0;color:var(--muted);font-weight:500}
     .cards{
       display:grid;
       gap:16px;
@@ -114,7 +100,7 @@
       <img src="https://www.fm.gov.om/wp-content/uploads/Flag_of_OmanMin-of-Info-800px-600x343.jpg" alt="Flag of Oman">
       <div>
         <h1>National Day 2025 – Check-In Dashboard</h1>
-        <p>Real-time counters (auto-refresh every 10s)</p>
+        <p>Real-time counters (auto-refresh every 5s)</p>
       </div>
     </header>
 
@@ -151,18 +137,38 @@
   </div>
 
   <script>
-    // use GitHub API to bypass raw.githubusercontent caching
-    const API_URL = "https://raw.github.com/repos/oman-checkin/oman-checkin/contents/checkin.json";
+    // 1) your original raw URL
+    const RAW_URL = "https://raw.githubusercontent.com/oman-checkin/oman-checkin/main/checkin.json";
+    // 2) fallback to GitHub API if raw is cached / blocked
+    const API_URL = "https://api.github.com/repos/oman-checkin/oman-checkin/contents/checkin.json";
+
+    async function fetchFromRaw() {
+      const res = await fetch(RAW_URL + "?t=" + Date.now(), {
+        cache: "no-store"
+      });
+      if (!res.ok) throw new Error("raw failed");
+      return res.json();
+    }
+
+    async function fetchFromApi() {
+      const res = await fetch(API_URL + "?t=" + Date.now(), {
+        headers: { "Accept": "application/vnd.github.v3+json" },
+        cache: "no-store"
+      });
+      if (!res.ok) throw new Error("api failed");
+      const file = await res.json();
+      const decoded = atob(file.content);
+      return JSON.parse(decoded);
+    }
 
     async function loadCounters() {
       try {
-        const res = await fetch(API_URL + "?t=" + Date.now(), {
-          headers: { "Accept": "application/vnd.github.v3+json" }
-        });
-        if (!res.ok) throw new Error("Fetch failed: " + res.status);
-        const file = await res.json();
-        const decoded = atob(file.content);
-        const data = JSON.parse(decoded);
+        let data;
+        try {
+          data = await fetchFromRaw();
+        } catch(e) {
+          data = await fetchFromApi();
+        }
 
         const checked = data.checked_in ?? 0;
         const notChecked = data.not_checked_in ?? 0;
@@ -178,14 +184,12 @@
         document.getElementById("updated-total").textContent = "OK";
         document.getElementById("lastFetch").textContent = "Last update: " + ts;
       } catch (err) {
-        document.getElementById("lastFetch").textContent = "Error loading data";
+        document.getElementById("lastFetch").textContent = "Error loading data – check repo/path or make it public.";
       }
     }
 
-    // first load
     loadCounters();
-    // auto refresh every 10 seconds
-    setInterval(loadCounters, 10000);
+    setInterval(loadCounters, 5000);
   </script>
 </body>
 </html>
